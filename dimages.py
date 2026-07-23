@@ -26,31 +26,7 @@ def downloads(url):
     # 保存 JSON
     open(f'./json/{start_date}.json', 'wb').write(requests.get(url=url, headers=headers).content)
     
-    # ===== 从 images 目录的 PNG 读取并转 WebP =====
-    png_path = f'./images/{start_date}.png'
-    webp_path = f'./webp/{start_date}.webp'
-    
-    # 先下载 PNG 到 images 目录（保持原有逻辑）
-    pic = requests.get(pic_url, stream=True)
-    if pic.status_code == 200:
-        open(png_path, 'wb').write(pic.content)
-        shutil.copyfile(png_path, f'./images/latest.png')
-        print(f'Create {start_date} PNG Image Success!')
-        
-        # 转换为 WebP
-        try:
-            img = Image.open(png_path)
-            if img.mode in ('RGBA', 'LA'):
-                img = img.convert('RGB')
-            img.save(webp_path, 'WEBP', quality=85, method=6)
-            shutil.copyfile(webp_path, f'./webp/latest.webp')
-            print(f'Create {start_date} WebP Image Success!')
-        except Exception as e:
-            print(f'Create {start_date} WebP Image Failed: {e}')
-    else:
-        print(f'Create {start_date} PNG Image Failed!')
-    
-    # ===== 1080p 版本也转 WebP =====
+    # 只生成一张 WebP：从 1080p 图片转换，命名为 日期.webp
     pic_1080p = requests.get(validate_title(pic_url), stream=True)
     if pic_1080p.status_code == 200:
         png_1080p_path = f'./1080pimages/{start_date}.png'
@@ -58,17 +34,17 @@ def downloads(url):
         shutil.copyfile(png_1080p_path, f'./1080pimages/latest.png')
         print(f'Create {start_date} 1080P_PNG Success!')
         
-        # 1080p 也转 WebP
         try:
             img = Image.open(png_1080p_path)
             if img.mode in ('RGBA', 'LA'):
                 img = img.convert('RGB')
-            webp_1080p_path = f'./webp/{start_date}_1080p.webp'
-            img.save(webp_1080p_path, 'WEBP', quality=85, method=6)
-            shutil.copyfile(webp_1080p_path, f'./webp/latest_1080p.webp')
-            print(f'Create {start_date} 1080P_WebP Success!')
+            # 直接命名为 日期.webp，不加 _1080p
+            webp_path = f'./webp/{start_date}.webp'
+            img.save(webp_path, 'WEBP', quality=85, method=6)
+            shutil.copyfile(webp_path, f'./webp/latest.webp')
+            print(f'Create {start_date} WebP Success!')
         except Exception as e:
-            print(f'Create {start_date} 1080P_WebP Failed: {e}')
+            print(f'Create {start_date} WebP Failed: {e}')
     else:
         print(f'Create {start_date} 1080P_PNG Failed!')
     
