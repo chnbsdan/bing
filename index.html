@@ -762,7 +762,7 @@
           currentIndex = (index + imageData.length) % imageData.length;
           const item = imageData[currentIndex];
           // 使用当前域名加载图片
-          modalImage.src = `${window.location.origin}/images/${item.startdate}.png`;
+          modalImage.src = `${window.location.origin}/webp/${item.startdate}.webp`;
           modalImage.alt = item.date;
           modalCaption.textContent = `${item.date} - ${item.copyright}`;
           resetTransform();
