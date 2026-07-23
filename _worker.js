@@ -5,12 +5,14 @@ export default {
     const path = url.pathname;
     const base = `${url.protocol}//${url.host}`;
 
-    // ===== 静态资源白名单：直接放行，不经过 Worker 处理 =====
+    // ===== 静态资源白名单：直接放行 =====
     if (
       path.startsWith('/webp/') ||
       path.startsWith('/images/') ||
       path.startsWith('/1080pimages/') ||
       path.startsWith('/json/') ||
+      path === '/daily.jpeg' ||
+      path === '/original.jpeg' ||
       path.endsWith('.png') ||
       path.endsWith('.jpg') ||
       path.endsWith('.jpeg') ||
@@ -69,7 +71,6 @@ export default {
     // ===== 2. 随机图片 /api/random =====
     if (path === '/api/random') {
       try {
-        // 读取 webp/index.json
         const jsonUrl = `${base}/webp/index.json`;
         const resp = await fetch(jsonUrl);
         if (!resp.ok) {
