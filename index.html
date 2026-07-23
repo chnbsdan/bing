@@ -567,10 +567,11 @@
       footer {
         background: var(--bg-yiyan);
         color: var(--text-muted);
-        padding: 30px 15px;
+        padding: 20px 15px;
         text-align: center;
         font-size: 0.9rem;
         transition: background 0.3s, color 0.3s;
+        border-top: 1px solid var(--border-light);
       }
       footer a {
         color: var(--text-primary);
@@ -582,12 +583,7 @@
         text-decoration: underline;
       }
       footer div {
-        margin-bottom: 10px;
-      }
-      #vercount_value_site_pv,
-      #vercount_value_site_uv {
-        font-weight: bold;
-        color: var(--text-primary);
+        margin-bottom: 6px;
       }
     </style>
   </head>
@@ -595,7 +591,7 @@
     <!-- 悬浮菜单 -->
     <nav class="floating-menu">
       <a href="/" style="display: flex; align-items: center; margin: 0 5px 0 5px">
-        <img src="favicon.ico" alt="Icon" class="menu-icon" />
+        <img src="/favicon.ico" alt="Icon" class="menu-icon" />
       </a>
       <a href="https://aoso.hangdn.com/" class="menu-item" target="_blank">站长博客</a>
       <a href="https://aoso.hangdn.com/" class="menu-item" target="_blank">个人主页</a>
@@ -639,16 +635,26 @@
 
     <!-- 页脚 -->
     <footer>
+      <script defer src="https://cn.vercount.one/js"></script>
       <div style="margin-bottom: 0.5em">
-        本站已运行：<span id="running-days">计算中...</span>
+        网站总请求量：<span id="vercount_value_site_pv">🤕</span> |
+        独立访客数：<span id="vercount_value_site_uv">🤕</span>
+      </div>
+      <div style="margin-bottom: 0.5em">
+        本站已运行：<span id="running-days">计算中...</span> |
+        距离下次更新：<span id="next-update">计算中...</span>
+      </div>
+      <div style="margin-bottom: 0.5em">
+        Powered by
+        <a href="https://github.com/features/actions" target="_blank" rel="nofollow noopener noreferrer">GitHub Actions</a> |
+        <a href="https://cn.bing.com" target="_blank" rel="nofollow noopener noreferrer">Bing_CN</a> |
+        <a href="https://console.tencentcloud.com/edgeone/makers" target="_blank" rel="nofollow noopener noreferrer">EdgeOne</a>
       </div>
       <div>
-        Powered by <a href="https://github.com/features/actions" target="_blank">GitHub Actions</a> |
-        <a href="https://cn.bing.com" target="_blank">Bing</a>
-      </div>
-      <div>
-        <a href="https://github.com/chnbsdan/bing" target="_blank">项目地址</a>
-        | MIT License © <span id="year"></span>
+        项目地址:
+        <a href="https://github.com/chnbsdan/daily-image" target="_blank" rel="nofollow noopener noreferrer">daily-image</a>
+        | MIT License © <span id="year"></span> |
+        <a href="https://aoso.hangdn.com/" target="_blank" rel="nofollow noopener noreferrer">Hangdn Notes</a>
       </div>
       <script>
         document.getElementById("year").textContent = new Date().getFullYear();
@@ -657,6 +663,17 @@
           const now = new Date();
           const runningDays = Math.floor((now - startDate) / (1000 * 60 * 60 * 24));
           document.getElementById("running-days").textContent = runningDays + " 天";
+          const tomorrow = new Date(now);
+          tomorrow.setDate(tomorrow.getDate() + (now.getHours() >= 12 ? 1 : 0));
+          tomorrow.setHours(12, 0, 0, 0);
+          let diff = tomorrow - now;
+          const hours = Math.floor(diff / (1000 * 60 * 60));
+          diff -= hours * 1000 * 60 * 60;
+          const minutes = Math.floor(diff / (1000 * 60));
+          diff -= minutes * 1000 * 60;
+          const seconds = Math.floor(diff / 1000);
+          document.getElementById("next-update").textContent = 
+            `${hours.toString().padStart(2, '0')}:${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
         }
         updateTimes();
         setInterval(updateTimes, 1000);
@@ -744,7 +761,8 @@
           if (!imageData.length) return;
           currentIndex = (index + imageData.length) % imageData.length;
           const item = imageData[currentIndex];
-          modalImage.src = `https://raw.githubusercontent.com/chnbsdan/bing/main/images/${item.startdate}.png`;
+          // 使用当前域名加载图片
+          modalImage.src = `${window.location.origin}/images/${item.startdate}.png`;
           modalImage.alt = item.date;
           modalCaption.textContent = `${item.date} - ${item.copyright}`;
           resetTransform();
@@ -967,7 +985,8 @@
           const heroImg = document.getElementById("hero-img");
           document.getElementById("hero-date").textContent = today.date;
           document.getElementById("hero-copy").textContent = today.copyright || '每日精选';
-          loadImage(heroImg, `https://raw.githubusercontent.com/chnbsdan/bing/main/images/${today.startdate}.png`);
+          // 使用当前域名加载图片
+          loadImage(heroImg, `${window.location.origin}/images/${today.startdate}.png`);
 
           // 历史图
           const historyEl = document.getElementById("history");
@@ -999,7 +1018,8 @@
               card.appendChild(copyText);
               historyEl.appendChild(card);
 
-              loadImage(img, `https://raw.githubusercontent.com/chnbsdan/bing/main/images/${item.startdate}.png`);
+              // 使用当前域名加载图片
+              loadImage(img, `${window.location.origin}/images/${item.startdate}.png`);
 
               card.addEventListener("click", () => {
                 openModal(index);
