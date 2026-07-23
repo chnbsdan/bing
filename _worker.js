@@ -1,9 +1,27 @@
-// _worker.js - 处理所有 /api/* 请求
+// _worker.js - 处理所有请求
 export default {
   async fetch(request) {
     const url = new URL(request.url);
     const path = url.pathname;
     const base = `${url.protocol}//${url.host}`;
+
+    // ===== 静态资源白名单：直接放行，不经过 Worker 处理 =====
+    if (
+      path.startsWith('/webp/') ||
+      path.startsWith('/images/') ||
+      path.startsWith('/1080pimages/') ||
+      path.startsWith('/json/') ||
+      path.endsWith('.png') ||
+      path.endsWith('.jpg') ||
+      path.endsWith('.jpeg') ||
+      path.endsWith('.webp') ||
+      path.endsWith('.ico') ||
+      path.endsWith('.svg') ||
+      path.endsWith('.css') ||
+      path.endsWith('.js')
+    ) {
+      return fetch(request);
+    }
 
     // ===== 1. API 文档 /api =====
     if (path === '/api') {
@@ -51,7 +69,7 @@ export default {
     // ===== 2. 随机图片 /api/random =====
     if (path === '/api/random') {
       try {
-        // 从 webp 目录读取 index.json
+        // 读取 webp/index.json
         const jsonUrl = `${base}/webp/index.json`;
         const resp = await fetch(jsonUrl);
         if (!resp.ok) {
@@ -115,7 +133,7 @@ export default {
       }
     }
 
-    // ===== 4. 其他请求（首页、图片、webp等）正常通过 =====
+    // ===== 4. 首页和其他请求 =====
     return fetch(request);
   }
 };
