@@ -663,21 +663,26 @@
       </script>
     </footer>
 
-    <!-- Modal -->
+    <!-- 重构后的 Modal -->
     <div class="modal" id="imageModal">
+      <!-- 关闭按钮 - 左上角 -->
       <button class="modal-close" id="modalClose" aria-label="关闭预览">
         <i class="fas fa-times"></i>
       </button>
+      
+      <!-- 左右导航按钮 -->
       <button class="modal-nav modal-nav-left" id="navLeft" aria-label="上一张">
         <i class="fas fa-chevron-left"></i>
       </button>
       <button class="modal-nav modal-nav-right" id="navRight" aria-label="下一张">
         <i class="fas fa-chevron-right"></i>
       </button>
+      
       <div class="modal-content">
         <img class="modal-img" id="modalImage" src="" alt="" />
         <div class="modal-caption" id="modalCaption"></div>
       </div>
+      
       <div class="zoom-hint">🖱 滚动缩放 · 拖动平移</div>
     </div>
 
@@ -702,7 +707,6 @@
         // ---- 图片数据 ----
         let imageData = [];
         let currentIndex = 0;
-        let todayDate = '';
 
         // ---- Modal 元素 ----
         const modal = document.getElementById("imageModal");
@@ -740,7 +744,6 @@
           if (!imageData.length) return;
           currentIndex = (index + imageData.length) % imageData.length;
           const item = imageData[currentIndex];
-          // 使用 Bing 原始图片 URL（直接从 images 目录加载）
           modalImage.src = `https://raw.githubusercontent.com/chnbsdan/bing/main/images/${item.startdate}.png`;
           modalImage.alt = item.date;
           modalCaption.textContent = `${item.date} - ${item.copyright}`;
@@ -900,63 +903,71 @@
             yiyanContent.textContent = '生活，是一场无法回放的电影，我们都是自己的导演。';
           });
 
-        // ---- 获取今日日期 ----
-        function getTodayDate() {
-          const now = new Date();
-          return now.getFullYear() +
-                 String(now.getMonth() + 1).padStart(2, '0') +
-                 String(now.getDate()).padStart(2, '0');
-        }
-        todayDate = getTodayDate();
-
-        // ---- 加载图片数据（从 bing 项目的 json 目录） ----
+        // ---- ===== 核心：循环获取最近90天的JSON数据 ===== ----
         async function fetchImageData() {
           try {
-            // 尝试获取今天的 JSON
-            let url = `https://raw.githubusercontent.com/chnbsdan/bing/main/json/${todayDate}.json`;
-            let response = await fetch(url);
-            
-            // 如果今天没有，往前找30天
-            if (!response.ok) {
-              for (let i = 1; i <= 30; i++) {
-                const d = new Date();
-                d.setDate(d.getDate() - i);
-                const dateStr = d.getFullYear() +
-                               String(d.getMonth() + 1).padStart(2, '0') +
-                               String(d.getDate()).padStart(2, '0');
-                url = `https://raw.githubusercontent.com/chnbsdan/bing/main/json/${dateStr}.json`;
-                response = await fetch(url);
-                if (response.ok) break;
+            let allImages = [];
+            let foundCount = 0;
+            const maxDays = 90;
+
+            console.log('📡 开始获取最近90天的图片数据...');
+
+            for (let i = 0; i < maxDays; i++) {
+              const d = new Date();
+              d.setDate(d.getDate() - i);
+              const dateStr = d.getFullYear() +
+                             String(d.getMonth() + 1).padStart(2, '0') +
+                             String(d.getDate()).padStart(2, '0');
+              
+              const url = `https://raw.githubusercontent.com/chnbsdan/bing/main/json/${dateStr}.json`;
+              
+              try {
+                const response = await fetch(url);
+                if (response.ok) {
+                  const data = await response.json();
+                  if (data.images && data.images.length > 0) {
+                    data.images.forEach(img => {
+                      allImages.push({
+                        startdate: img.startdate,
+                        date: img.startdate.slice(0, 4) + '-' + img.startdate.slice(4, 6) + '-' + img.startdate.slice(6, 8),
+                        copyright: img.copyright || '',
+                        url: img.url || '',
+                        title: img.title || ''
+                      });
+                    });
+                    foundCount++;
+                    console.log(`✅ 获取到 ${dateStr}.json，${data.images.length} 张图片`);
+                  }
+                }
+              } catch (e) {
+                // 静默跳过不存在的文件
               }
             }
-            
-            if (!response.ok) {
-              console.error("无法获取图片数据");
-              return;
-            }
-            
-            const data = await response.json();
-            if (!data.images || data.images.length === 0) {
-              console.error("没有图片数据");
-              return;
-            }
 
-            // 处理数据
-            const processedData = data.images.map(img => ({
-              startdate: img.startdate,
-              date: img.startdate.slice(0, 4) + '-' + img.startdate.slice(4, 6) + '-' + img.startdate.slice(6, 8),
-              copyright: img.copyright || '',
-              url: img.url || '',
-              title: img.title || ''
-            }));
+            console.log(`📊 共获取 ${foundCount} 天的数据，${allImages.length} 张图片`);
+
+            if (allImages.length === 0) {
+              console.error("❌ 没有获取到任何图片数据");
+              return;
+            }
 
             // 按日期排序（最新的在前）
-            processedData.sort((a, b) => b.startdate.localeCompare(a.startdate));
+            allImages.sort((a, b) => b.startdate.localeCompare(a.startdate));
 
-            // 只保留最近30天
-            const todayNum = parseInt(todayDate);
-            const thirtyDaysAgo = parseInt(getThirtyDaysAgo());
-            const filteredData = processedData.filter(item => parseInt(item.startdate) >= thirtyDaysAgo);
+            // 去重（按 startdate 去重）
+            const seen = new Set();
+            const uniqueImages = allImages.filter(img => {
+              if (seen.has(img.startdate)) return false;
+              seen.add(img.startdate);
+              return true;
+            });
+
+            // 只保留最近90天
+            const todayNum = parseInt(getTodayDate());
+            const ninetyDaysAgo = parseInt(getNinetyDaysAgo());
+            const filteredData = uniqueImages.filter(item => parseInt(item.startdate) >= ninetyDaysAgo);
+
+            console.log(`📸 最终加载 ${filteredData.length} 张图片`);
 
             imageData = filteredData;
             renderImages(filteredData);
@@ -966,9 +977,16 @@
           }
         }
 
-        function getThirtyDaysAgo() {
+        function getTodayDate() {
+          const now = new Date();
+          return now.getFullYear() +
+                 String(now.getMonth() + 1).padStart(2, '0') +
+                 String(now.getDate()).padStart(2, '0');
+        }
+
+        function getNinetyDaysAgo() {
           const d = new Date();
-          d.setDate(d.getDate() - 30);
+          d.setDate(d.getDate() - 90);
           return d.getFullYear() +
                  String(d.getMonth() + 1).padStart(2, '0') +
                  String(d.getDate()).padStart(2, '0');
@@ -976,14 +994,16 @@
 
         // ---- 渲染图片 ----
         function renderImages(data) {
-          if (!data || data.length === 0) return;
+          if (!data || data.length === 0) {
+            console.error("没有数据可渲染");
+            return;
+          }
 
           // 今日图
           const today = data[0];
           const heroImg = document.getElementById("hero-img");
           document.getElementById("hero-date").textContent = today.date;
           document.getElementById("hero-copy").textContent = today.copyright || '每日精选';
-          // 使用 Bing 原始图片
           loadImage(heroImg, `https://raw.githubusercontent.com/chnbsdan/bing/main/images/${today.startdate}.png`);
 
           // 历史图
