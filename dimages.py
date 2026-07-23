@@ -5,6 +5,7 @@ import requests
 import re
 from PIL import Image
 from io import BytesIO
+import os
 
 def validate_title(raw):
     new_title = re.sub("UHD.jpg", "1920x1080.jpg", raw)
@@ -19,38 +20,56 @@ def downloads(url):
         json_data['images'][0]['url'].split("&")[0])
     start_date = json_data['images'][0]['startdate']
     
+    # 确保 webp 文件夹存在
+    os.makedirs('./webp', exist_ok=True)
+    
     # 保存 JSON
     open(f'./json/{start_date}.json', 'wb').write(requests.get(url=url, headers=headers).content)
     
-    # 下载原图并转换为 WebP
+    # ===== 从 images 目录的 PNG 读取并转 WebP =====
+    png_path = f'./images/{start_date}.png'
+    webp_path = f'./webp/{start_date}.webp'
+    
+    # 先下载 PNG 到 images 目录（保持原有逻辑）
     pic = requests.get(pic_url, stream=True)
     if pic.status_code == 200:
+        open(png_path, 'wb').write(pic.content)
+        shutil.copyfile(png_path, f'./images/latest.png')
+        print(f'Create {start_date} PNG Image Success!')
+        
+        # 转换为 WebP
         try:
-            img = Image.open(BytesIO(pic.content))
+            img = Image.open(png_path)
             if img.mode in ('RGBA', 'LA'):
                 img = img.convert('RGB')
-            # 保存为 WebP，质量 85
-            img.save(f'./images/{start_date}.webp', 'WEBP', quality=85, method=6)
-            shutil.copyfile(f'./images/{start_date}.webp', f'./images/latest.webp')
+            img.save(webp_path, 'WEBP', quality=85, method=6)
+            shutil.copyfile(webp_path, f'./webp/latest.webp')
             print(f'Create {start_date} WebP Image Success!')
         except Exception as e:
             print(f'Create {start_date} WebP Image Failed: {e}')
     else:
-        print(f'Create {start_date} Image Failed!')
+        print(f'Create {start_date} PNG Image Failed!')
     
-    # 1080p 版本也转 WebP
+    # ===== 1080p 版本也转 WebP =====
     pic_1080p = requests.get(validate_title(pic_url), stream=True)
     if pic_1080p.status_code == 200:
+        png_1080p_path = f'./1080pimages/{start_date}.png'
+        open(png_1080p_path, 'wb').write(pic_1080p.content)
+        shutil.copyfile(png_1080p_path, f'./1080pimages/latest.png')
+        print(f'Create {start_date} 1080P_PNG Success!')
+        
+        # 1080p 也转 WebP
         try:
-            img = Image.open(BytesIO(pic_1080p.content))
+            img = Image.open(png_1080p_path)
             if img.mode in ('RGBA', 'LA'):
                 img = img.convert('RGB')
-            img.save(f'./1080pimages/{start_date}.webp', 'WEBP', quality=85, method=6)
-            shutil.copyfile(f'./1080pimages/{start_date}.webp', f'./1080pimages/latest.webp')
+            webp_1080p_path = f'./webp/{start_date}_1080p.webp'
+            img.save(webp_1080p_path, 'WEBP', quality=85, method=6)
+            shutil.copyfile(webp_1080p_path, f'./webp/latest_1080p.webp')
             print(f'Create {start_date} 1080P_WebP Success!')
         except Exception as e:
             print(f'Create {start_date} 1080P_WebP Failed: {e}')
     else:
-        print(f'Create {start_date} 1080P_Image Failed!')
+        print(f'Create {start_date} 1080P_PNG Failed!')
     
     return
