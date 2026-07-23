@@ -907,10 +907,7 @@
         async function fetchImageData() {
           try {
             let allImages = [];
-            let foundCount = 0;
             const maxDays = 90;
-
-            console.log('📡 开始获取最近90天的图片数据...');
 
             for (let i = 0; i < maxDays; i++) {
               const d = new Date();
@@ -931,65 +928,31 @@
                         startdate: img.startdate,
                         date: img.startdate.slice(0, 4) + '-' + img.startdate.slice(4, 6) + '-' + img.startdate.slice(6, 8),
                         copyright: img.copyright || '',
-                        url: img.url || '',
                         title: img.title || ''
                       });
                     });
-                    foundCount++;
-                    console.log(`✅ 获取到 ${dateStr}.json，${data.images.length} 张图片`);
                   }
                 }
               } catch (e) {
-                // 静默跳过不存在的文件
+                // 静默跳过
               }
             }
 
-            console.log(`📊 共获取 ${foundCount} 天的数据，${allImages.length} 张图片`);
-
             if (allImages.length === 0) {
-              console.error("❌ 没有获取到任何图片数据");
+              console.error("没有获取到任何图片数据");
               return;
             }
 
             // 按日期排序（最新的在前）
             allImages.sort((a, b) => b.startdate.localeCompare(a.startdate));
 
-            // 去重（按 startdate 去重）
-            const seen = new Set();
-            const uniqueImages = allImages.filter(img => {
-              if (seen.has(img.startdate)) return false;
-              seen.add(img.startdate);
-              return true;
-            });
-
-            // 只保留最近90天
-            const todayNum = parseInt(getTodayDate());
-            const ninetyDaysAgo = parseInt(getNinetyDaysAgo());
-            const filteredData = uniqueImages.filter(item => parseInt(item.startdate) >= ninetyDaysAgo);
-
-            console.log(`📸 最终加载 ${filteredData.length} 张图片`);
-
-            imageData = filteredData;
-            renderImages(filteredData);
+            // 直接使用全部数据
+            imageData = allImages;
+            renderImages(allImages);
 
           } catch (error) {
             console.error("加载图片数据失败:", error);
           }
-        }
-
-        function getTodayDate() {
-          const now = new Date();
-          return now.getFullYear() +
-                 String(now.getMonth() + 1).padStart(2, '0') +
-                 String(now.getDate()).padStart(2, '0');
-        }
-
-        function getNinetyDaysAgo() {
-          const d = new Date();
-          d.setDate(d.getDate() - 90);
-          return d.getFullYear() +
-                 String(d.getMonth() + 1).padStart(2, '0') +
-                 String(d.getDate()).padStart(2, '0');
         }
 
         // ---- 渲染图片 ----
@@ -999,7 +962,7 @@
             return;
           }
 
-          // 今日图
+          // 今日图（取最新的）
           const today = data[0];
           const heroImg = document.getElementById("hero-img");
           document.getElementById("hero-date").textContent = today.date;
