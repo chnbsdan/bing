@@ -6,6 +6,7 @@ import re
 from PIL import Image
 from io import BytesIO
 import os
+from datetime import datetime, timedelta
 
 def validate_title(raw):
     new_title = re.sub("UHD.jpg", "1920x1080.jpg", raw)
@@ -48,4 +49,35 @@ def downloads(url):
     else:
         print(f'Create {start_date} 1080P_PNG Failed!')
     
+    # ===== 新增：生成 webp/index.json =====
+    generate_index_json()
+    
     return
+
+def generate_index_json():
+    """扫描 webp 目录，生成 index.json"""
+    webp_dir = './webp'
+    if not os.path.exists(webp_dir):
+        print('webp directory not found')
+        return
+    
+    images = []
+    for filename in os.listdir(webp_dir):
+        if filename.endswith('.webp') and filename != 'latest.webp':
+            date_str = filename.replace('.webp', '')
+            if len(date_str) == 8 and date_str.isdigit():
+                images.append({
+                    'startdate': date_str,
+                    'path': f'/webp/{filename}'
+                })
+    
+    images.sort(key=lambda x: x['startdate'], reverse=True)
+    
+    # 只保留最近90天
+    ninety_days_ago = (datetime.now() - timedelta(days=90)).strftime('%Y%m%d')
+    images = [img for img in images if img['startdate'] >= ninety_days_ago]
+    
+    with open('./webp/index.json', 'w', encoding='utf-8') as f:
+        json.dump({'images': images}, f, ensure_ascii=False, indent=2)
+    
+    print(f'Create webp/index.json success! {len(images)} images')
