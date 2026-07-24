@@ -1,39 +1,30 @@
-export default async function onRequest(context) {
+export async function onRequest(context) {
   const { request } = context;
   const url = new URL(request.url);
 
-  // 获取图片索引 JSON
-  const host = url.origin;
-  const jsonUrl = `${host}/picture/index.json`;
-
   try {
-    const fetchResp = await fetch(jsonUrl);
-    if (!fetchResp.ok) {
+    const base = `${url.protocol}//${url.host}`;
+    const jsonUrl = `${base}/webp/index.json`;
+    const resp = await fetch(jsonUrl);
+    if (!resp.ok) {
       return new Response("Failed to load index.json", { status: 502 });
     }
-
-    let images = await fetchResp.json();
-    if (images.length > 1) {
-      images = images.slice(0, -1);
+    const data = await resp.json();
+    if (!data.images || data.images.length === 0) {
+      return new Response("No images found", { status: 404 });
     }
-
+    const images = data.images;
     const randomImage = images[Math.floor(Math.random() * images.length)];
     const redirect = url.searchParams.get("redirect") === "true";
-    const imagePath = randomImage.path;
-
+    
     if (redirect) {
-      return Response.redirect(imagePath, 302);
+      return Response.redirect(randomImage.path, 302);
     }
-
-    const imageUrl = new URL(imagePath, request.url);
-    const resp = await fetch(imageUrl.toString());
-    if (!resp.ok) {
-      return new Response("Failed to fetch image", { status: 502 });
-    }
-
-    return new Response(resp.body, {
+    
+    const imageResp = await fetch(`${base}${randomImage.path}`);
+    return new Response(imageResp.body, {
       headers: {
-        "Content-Type": resp.headers.get("Content-Type") || "image/webp",
+        "Content-Type": "image/webp",
         "Cache-Control": "public, max-age=10800",
       },
     });
