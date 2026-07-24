@@ -469,17 +469,18 @@
     .modal.active .zoom-hint {
       opacity: 1;
     }
+    /* 图片标题 - 鼠标悬停显示在图片底部内侧 */
     .modal-caption {
       position: absolute;
       bottom: 20px;
       left: 50%;
       transform: translateX(-50%);
-      color: rgba(255,255,255,0.8);
+      color: rgba(255,255,255,0.9);
       font-size: 1rem;
-      background: rgba(0,0,0,0.4);
-      padding: 8px 20px;
-      border-radius: 30px;
+      background: rgba(0,0,0,0.5);
       backdrop-filter: blur(4px);
+      padding: 8px 20px;
+      border-radius: 20px;
       z-index: 10;
       pointer-events: none;
       text-align: center;
@@ -497,7 +498,6 @@
       position: relative;
       max-width: 90vw;
       max-height: 80vh;
-      overflow: auto;
       border-radius: 8px;
       box-shadow: 0 10px 25px rgba(0,0,0,0.5);
       background: rgba(0,0,0,0.3);
@@ -505,6 +505,7 @@
       display: flex;
       align-items: center;
       justify-content: center;
+      overflow: hidden;
     }
     .modal-img-container:active {
       cursor: grabbing;
@@ -568,7 +569,7 @@
   <nav class="floating-menu">
     <a href="/" style="display:flex;align-items:center;margin:0 5px 0 5px"><img src="/favicon.ico" alt="Icon" class="menu-icon" /></a>
     <a href="https://aoso.hangdn.com/" class="menu-item" target="_blank">站长博客</a>
-    <a href="https://bing.hangdn.net" class="menu-item" target="_blank">每日一图</a>
+    <a href="https://bing.shd.sryze.cc" class="menu-item" target="_blank">每日一图</a>
     <a href="/api" class="menu-item" target="_blank">接口文档</a>
     <a href="https://github.com/chnbsdan/bingtc" class="menu-item" target="_blank">项目地址</a>
   </nav>
@@ -596,24 +597,24 @@
     <div style="margin-bottom:0.5em">网站总请求量：<span id="vercount_value_site_pv">🤕</span> | 独立访客数：<span id="vercount_value_site_uv">🤕</span></div>
     <div style="margin-bottom:0.5em">本站已运行：<span id="running-days">计算中...</span> | 距离下次更新：<span id="next-update">计算中...</span></div>
     <div style="margin-bottom:0.5em">Powered by <a href="https://github.com/features/actions" target="_blank">GitHub Actions</a> | <a href="https://cn.bing.com" target="_blank">Bing_CN</a> | <a href="https://dash.cloudflare.com/" target="_blank">Cloudflare</a></div>
-    <div>项目地址: <a href="https://github.com/chnbsdan/bing" target="_blank">bing</a> | MIT License &copy; <span id="year"></span> | <a href="https://aoso.hangdn.com/" target="_blank">Hangdn Notes</a></div>
+    <div>项目地址: <a href="https://github.com/chnbsdan/bingtc" target="_blank">bingtc</a> | MIT License &copy; <span id="year"></span> | <a href="https://aoso.hangdn.com/" target="_blank">Hangdn Notes</a></div>
     <script>
       document.getElementById("year").textContent = new Date().getFullYear();
       function updateTimes() {
-        const startDate = new Date('2026-4-20');
-        const now = new Date();
-        const runningDays = Math.floor((now - startDate) / (1000 * 60 * 60 * 24));
+        var startDate = new Date('2026-4-20');
+        var now = new Date();
+        var runningDays = Math.floor((now - startDate) / (1000 * 60 * 60 * 24));
         document.getElementById("running-days").textContent = runningDays + " 天";
-        const tomorrow = new Date(now);
+        var tomorrow = new Date(now);
         tomorrow.setDate(tomorrow.getDate() + (now.getHours() >= 12 ? 1 : 0));
         tomorrow.setHours(12, 0, 0, 0);
-        let diff = tomorrow - now;
-        const hours = Math.floor(diff / (1000 * 60 * 60));
+        var diff = tomorrow - now;
+        var hours = Math.floor(diff / (1000 * 60 * 60));
         diff -= hours * 1000 * 60 * 60;
-        const minutes = Math.floor(diff / (1000 * 60));
+        var minutes = Math.floor(diff / (1000 * 60));
         diff -= minutes * 1000 * 60;
-        const seconds = Math.floor(diff / 1000);
-        document.getElementById("next-update").textContent = 
+        var seconds = Math.floor(diff / 1000);
+        document.getElementById("next-update").textContent =
           String(hours).padStart(2, '0') + ':' + String(minutes).padStart(2, '0') + ':' + String(seconds).padStart(2, '0');
       }
       updateTimes();
@@ -818,22 +819,20 @@
       async function fetchImageData() {
         try {
           var url = window.location.origin + '/webp/index.json';
-          console.log('📡 请求图片索引:', url);
           var response = await fetch(url);
           if (!response.ok) {
-            console.error('❌ 获取 index.json 失败:', response.status);
+            console.error('获取 index.json 失败:', response.status);
             return;
           }
           var data = await response.json();
           if (!data.images || data.images.length === 0) {
-            console.error('❌ 没有图片数据');
+            console.error('没有图片数据');
             return;
           }
-          console.log('✅ 成功加载 ' + data.images.length + ' 张图片');
           imageData = data.images;
           renderImages(imageData);
         } catch (error) {
-          console.error('❌ 加载图片数据失败:', error);
+          console.error('加载图片数据失败:', error);
         }
       }
 
