@@ -2,6 +2,7 @@ export default {
   async fetch(request) {
     const url = new URL(request.url);
     const path = url.pathname;
+    const base = `${url.protocol}//${url.host}`;
 
     // ===== 静态资源直接放行 =====
     if (
@@ -22,10 +23,7 @@ export default {
       return fetch(request);
     }
 
-    // ===== API 处理 =====
-    const base = `${url.protocol}//${url.host}`;
-
-    // API 文档
+    // ===== API 文档 =====
     if (path === '/api') {
       const html = `<!DOCTYPE html>
 <html lang="zh">
@@ -45,47 +43,101 @@ code { background: #f4f4f4; padding: 0.2rem 0.4rem; border-radius: 4px; }
       return new Response(html, { headers: { 'Content-Type': 'text/html; charset=utf-8' } });
     }
 
-    // 随机图片
+    // ===== 随机图片 =====
     if (path === '/api/random') {
       try {
-        const resp = await fetch(`${base}/webp/index.json`);
-        if (!resp.ok) return new Response('No index', { status: 502 });
-        const data = await resp.json();
-        if (!data.images || data.images.length === 0) {
-          return new Response('No images', { status: 404 });
+        // 从 json 目录获取最新的日期列表
+        const resp = await fetch(`${base}/json/`);
+        // 但 GitHub 目录列表有限制，改用另一种方式：从图片文件名反向获取
+        
+        // 直接读取 webp 目录下的图片列表（需要有个 index.json）
+        // 既然没有，我们换一种方式：每天生成一个 json 文件，我们读取今天和昨天的
+        
+        // 简单方案：尝试读取最近30天的 json 文件，找到第一个有图片的
+        const today = new Date();
+        let images = [];
+        let imagePaths = [];
+        
+        // 从 webp 目录读取已有的文件（通过 GitHub API 比较麻烦，我们换个思路）
+        // 用现有的 json 文件获取日期列表
+        for (let i = 0; i < 30; i++) {
+          const d = new Date(today);
+          d.setDate(d.getDate() - i);
+          const dateStr = d.getFullYear() +
+                         String(d.getMonth() + 1).padStart(2, '0') +
+                         String(d.getDate()).padStart(2, '0');
+          
+          // 检查 webp 目录下是否有对应日期的 webp 文件
+          const checkResp = await fetch(`${base}/webp/${dateStr}.webp`, { method: 'HEAD' });
+          if (checkResp.ok) {
+            imagePaths.push(`/webp/${dateStr}.webp`);
+          }
         }
-        const random = data.images[Math.floor(Math.random() * data.images.length)];
-        if (url.searchParams.get('redirect') === 'true') {
-          return Response.redirect(random.path, 302);
+        
+        if (imagePaths.length === 0) {
+          return new Response('No images found', { status: 404 });
         }
-        const img = await fetch(`${base}${random.path}`);
+        
+        const randomPath = imagePaths[Math.floor(Math.random() * imagePaths.length)];
+        const redirect = url.searchParams.get('redirect') === 'true';
+        
+        if (redirect) {
+          return Response.redirect(randomPath, 302);
+        }
+        
+        const img = await fetch(`${base}${randomPath}`);
         return new Response(img.body, {
           headers: { 'Content-Type': 'image/webp', 'Cache-Control': 'public, max-age=10800' }
         });
-      } catch {
-        return new Response('Error', { status: 500 });
+      } catch (e) {
+        return new Response('Error: ' + e.message, { status: 500 });
       }
     }
 
-    // 今日图片
+    // ===== 今日图片 =====
     if (path === '/api/daily') {
       try {
         const format = url.searchParams.get('format') || 'webp';
         const redirect = url.searchParams.get('redirect') === 'true';
-        const paths = { webp: '/webp/latest.webp', jpeg: '/daily.jpeg', original: '/original.jpeg' };
-        const imgPath = paths[format] || paths.webp;
-        if (redirect) return Response.redirect(imgPath, 302);
-        const img = await fetch(`${base}${imgPath}`);
-        const contentType = format === 'webp' ? 'image/webp' : 'image/jpeg';
+        
+        // 先找今天，找不到找昨天
+        const today = new Date();
+        let dateStr = today.getFullYear() +
+                     String(today.getMonth() + 1).padStart(2, '0') +
+                     String(today.getDate()).padStart(2, '0');
+        
+        let imagePath = `/webp/${dateStr}.webp`;
+        let checkResp = await fetch(`${base}${imagePath}`, { method: 'HEAD' });
+        
+        if (!checkResp.ok) {
+          // 今天没有，找昨天
+          const yesterday = new Date(today);
+          yesterday.setDate(yesterday.getDate() - 1);
+          dateStr = yesterday.getFullYear() +
+                   String(yesterday.getMonth() + 1).padStart(2, '0') +
+                   String(yesterday.getDate()).padStart(2, '0');
+          imagePath = `/webp/${dateStr}.webp`;
+          checkResp = await fetch(`${base}${imagePath}`, { method: 'HEAD' });
+        }
+        
+        if (!checkResp.ok) {
+          return new Response('No daily image found', { status: 404 });
+        }
+        
+        if (redirect) {
+          return Response.redirect(imagePath, 302);
+        }
+        
+        const img = await fetch(`${base}${imagePath}`);
         return new Response(img.body, {
-          headers: { 'Content-Type': contentType, 'Cache-Control': 'public, max-age=10800' }
+          headers: { 'Content-Type': 'image/webp', 'Cache-Control': 'public, max-age=10800' }
         });
-      } catch {
-        return new Response('Error', { status: 500 });
+      } catch (e) {
+        return new Response('Error: ' + e.message, { status: 500 });
       }
     }
 
-    // 所有其他请求（包括首页）直接放行
+    // ===== 首页和其他请求 =====
     return fetch(request);
   }
 };
