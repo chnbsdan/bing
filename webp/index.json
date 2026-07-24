@@ -1,6 +1,10 @@
 {
   "images": [
     {
+      "startdate": "20260724",
+      "path": "/webp/20260724.webp"
+    },
+    {
       "startdate": "20260723",
       "path": "/webp/20260723.webp"
     },
