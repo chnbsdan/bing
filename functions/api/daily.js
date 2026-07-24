@@ -1,6 +1,7 @@
 export async function onRequest(context) {
   const { request } = context;
   const url = new URL(request.url);
+  const base = `${url.protocol}//${url.host}`;
 
   const format = url.searchParams.get("format") || "webp";
   const redirect = url.searchParams.get("redirect") === "true";
@@ -18,7 +19,9 @@ export async function onRequest(context) {
       : "/webp/latest.webp";
 
   if (redirect) {
-    return Response.redirect(imagePath, 302);
+    // 改成完整 URL
+    const fullUrl = base + imagePath;
+    return Response.redirect(fullUrl, 302);
   }
 
   const imageUrl = new URL(imagePath, request.url);
