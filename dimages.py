@@ -39,17 +39,27 @@ def downloads(url):
             img = Image.open(png_1080p_path)
             if img.mode in ('RGBA', 'LA'):
                 img = img.convert('RGB')
-            # 直接命名为 日期.webp，不加 _1080p
+            
+            # 1. 生成 WebP（日期命名）
             webp_path = f'./webp/{start_date}.webp'
             img.save(webp_path, 'WEBP', quality=85, method=6)
             shutil.copyfile(webp_path, f'./webp/latest.webp')
             print(f'Create {start_date} WebP Success!')
+            
+            # 2. 生成 daily.jpeg（放在 webp 目录）
+            img.save('./webp/daily.jpeg', 'JPEG', quality=95, optimize=True)
+            print(f'Create webp/daily.jpeg Success!')
+            
+            # 3. 生成 original.jpeg（放在 webp 目录）
+            img.save('./webp/original.jpeg', 'JPEG', quality=100)
+            print(f'Create webp/original.jpeg Success!')
+            
         except Exception as e:
-            print(f'Create {start_date} WebP Failed: {e}')
+            print(f'Create files Failed: {e}')
     else:
         print(f'Create {start_date} 1080P_PNG Failed!')
     
-    # ===== 新增：生成 webp/index.json =====
+    # 生成 index.json
     generate_index_json()
     
     return
