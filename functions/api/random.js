@@ -1,9 +1,9 @@
 export async function onRequest(context) {
   const { request } = context;
   const url = new URL(request.url);
+  const base = `${url.protocol}//${url.host}`;
 
   try {
-    const base = `${url.protocol}//${url.host}`;
     const jsonUrl = `${base}/webp/index.json`;
     const resp = await fetch(jsonUrl);
     if (!resp.ok) {
@@ -18,7 +18,9 @@ export async function onRequest(context) {
     const redirect = url.searchParams.get("redirect") === "true";
     
     if (redirect) {
-      return Response.redirect(randomImage.path, 302);
+      // 改成完整 URL
+      const fullUrl = base + randomImage.path;
+      return Response.redirect(fullUrl, 302);
     }
     
     const imageResp = await fetch(`${base}${randomImage.path}`);
