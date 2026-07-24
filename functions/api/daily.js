@@ -10,10 +10,11 @@ export async function onRequest(context) {
     return new Response("Invalid format parameter", { status: 400 });
   }
 
+  // 所有图片都在 webp 目录
   const imagePath = format === "jpeg" 
-    ? "/daily.jpeg" 
+    ? "/webp/daily.jpeg" 
     : format === "original" 
-      ? "/original.jpeg" 
+      ? "/webp/original.jpeg" 
       : "/webp/latest.webp";
 
   if (redirect) {
