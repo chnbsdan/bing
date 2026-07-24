@@ -1,4 +1,4 @@
-export default async function onRequest(context) {
+export async function onRequest(context) {
   const { request } = context;
   const url = new URL(request.url);
 
@@ -14,7 +14,7 @@ export default async function onRequest(context) {
     ? "/daily.jpeg" 
     : format === "original" 
       ? "/original.jpeg" 
-      : "/daily.webp";
+      : "/webp/latest.webp";
 
   if (redirect) {
     return Response.redirect(imagePath, 302);
@@ -26,9 +26,12 @@ export default async function onRequest(context) {
     if (!resp.ok) {
       return new Response("Failed to fetch image", { status: 502 });
     }
+    const contentType = format === "jpeg" || format === "original" 
+      ? "image/jpeg" 
+      : "image/webp";
     return new Response(resp.body, {
       headers: {
-        "Content-Type": resp.headers.get("Content-Type") || "image/webp",
+        "Content-Type": contentType,
         "Cache-Control": "public, max-age=10800",
       },
     });
