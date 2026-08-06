@@ -1077,8 +1077,15 @@ html, body {
         async function loadData() {
             showProgress();
             try {
-                var url = BASE_PATH + '/json/history-2010-2019.json';
-                var res = await fetch(url);
+                // ★★★ 关键修复：添加时间戳和 Cache-Control 头，绕过缓存 ★★★
+                var url = '/json/history-2010-2019.json?t=' + Date.now();
+                var res = await fetch(url, {
+                    headers: {
+                        'Cache-Control': 'no-cache, no-store, must-revalidate',
+                        'Pragma': 'no-cache',
+                        'Expires': '0'
+                    }
+                });
                 if (!res.ok) throw new Error('HTTP ' + res.status);
                 var rawData = await res.json();
                 
