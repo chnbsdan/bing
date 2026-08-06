@@ -6,7 +6,6 @@ export async function onRequest(context) {
   const host = url.origin;
 
   try {
-    // ★★★ 读取 bing-wallpaper2 的 data.json ★★★
     const jsonUrl = `${host}/json/data.json`;
     const resp = await fetch(new Request(jsonUrl, request));
     if (!resp.ok) {
@@ -21,21 +20,43 @@ export async function onRequest(context) {
     // ★★★ 随机选一张 ★★★
     const randomItem = data[Math.floor(Math.random() * data.length)];
     const baseUrl = 'https://www.bing.com';
-    const imageUrl = `${baseUrl}${randomItem.urlbase}_UHD.jpg`;
 
-    if (redirect) {
-      return Response.redirect(imageUrl, 302);
+    // ★★★ 构造多个格式的图片 URL ★★★
+    const imageUrls = [
+      `${baseUrl}${randomItem.urlbase}_UHD.jpg`,
+      `${baseUrl}${randomItem.urlbase}_1920x1080.jpg`,
+      `${baseUrl}${randomItem.urlbase}_1920x1200.jpg`,
+    ];
+
+    // ★★★ 降级加载函数 ★★★
+    async function fetchImageWithFallback(urls, redirect) {
+      for (const imageUrl of urls) {
+        try {
+          const imgResp = await fetch(imageUrl, {
+            headers: { 'User-Agent': 'CloudflarePages-Function' }
+          });
+          if (imgResp.ok) {
+            if (redirect) {
+              return Response.redirect(imageUrl, 302);
+            }
+            return new Response(imgResp.body, {
+              headers: {
+                'Content-Type': imgResp.headers.get('Content-Type') || 'image/jpeg',
+                'Cache-Control': 'public, max-age=86400',
+                'X-Image-Date': randomItem.startdate,
+                'X-Image-Copyright': encodeURIComponent(randomItem.copyright || '')
+              }
+            });
+          }
+        } catch (e) {
+          // 继续尝试下一个格式
+        }
+      }
+      // 所有格式都失败
+      return new Response('Image not found', { status: 404 });
     }
 
-    const imgResp = await fetch(imageUrl);
-    return new Response(imgResp.body, {
-      headers: {
-        'Content-Type': imgResp.headers.get('Content-Type') || 'image/jpeg',
-        'Cache-Control': 'public, max-age=86400',
-        'X-Image-Date': randomItem.startdate,
-        'X-Image-Copyright': encodeURIComponent(randomItem.copyright || '')
-      },
-    });
+    return await fetchImageWithFallback(imageUrls, redirect);
 
   } catch (error) {
     return new Response(`Error: ${error.message}`, { status: 500 });
