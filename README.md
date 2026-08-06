@@ -2,15 +2,15 @@
 
 A RESTful API for Bing wallpaper to use easy.
 
-<img width="800" src="https://bingw.jasonzeng.dev/?w=800"/>
+<img width="800" src="https://bing-wallpaper2.pages.dev/api/daily"/>
 
-> `<img src="https://bingw.jasonzeng.dev/?w=800"/>`
+> `<img src="https://bing-wallpaper2.pages.dev/api/daily"/>`
 
 ## Usage
 
 ### API
 
-Endpoint: [https://bingw.jasonzeng.dev](https://bingw.jasonzeng.dev/)
+Endpoint: [https://bing-wallpaper2.pages.dev](https://bing-wallpaper2.pages.dev/)
 
 ### Parameters
 
