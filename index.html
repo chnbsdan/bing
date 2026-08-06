@@ -1111,13 +1111,10 @@ html, body {
                     
                     // ★★★ 生成多个格式的链接，按优先级排列 ★★★
                     var urls = {
-                        // 优先使用 UHD
+                        // 大图：优先使用 UHD，降级使用 1920x1200
                         uhd: baseUrl + '_UHD.jpg',
-                        // 降级使用 1920x1200
                         hd: baseUrl + '_1920x1200.jpg',
-                        // 再降级使用 1920x1080
-                        fhd: baseUrl + '_1920x1080.jpg',
-                        // 缩略图
+                        // ★★★ 小卡片缩略图：只使用 _400x240.jpg ★★★
                         thumb: baseUrl + '_400x240.jpg'
                     };
                     
@@ -1180,15 +1177,13 @@ html, body {
                 var card = document.createElement('div');
                 card.className = 'card';
 
+                // ★★★ 小卡片只使用 _400x240.jpg ★★★
                 var thumbSrc = item.thumb || '';
                 var urls = item.urls;
-                var uhdSrc = urls.uhd || '';
-                var hdSrc = urls.hd || '';
-                var fhdSrc = urls.fhd || '';
 
                 card.innerHTML =
                     '<div class="placeholder-bg" style="background-image: url(' + thumbSrc + ');"></div>' +
-                    '<img src="' + uhdSrc + '" alt="' + (item.copyright || item.date) + '" loading="lazy" />' +
+                    '<img src="' + thumbSrc + '" alt="' + (item.copyright || item.date) + '" loading="lazy" />' +
                     '<div class="info">' +
                     '<div class="date">' + item.date + '</div>' +
                     '<div class="title">' + (item.title || item.copyright || '无标题') + '</div>' +
@@ -1207,21 +1202,19 @@ html, body {
                     placeholderBg.classList.add('hidden');
                 }
                 
-                // ★★★ 图片加载失败时的降级处理 ★★★
+                // ★★★ 缩略图加载失败时，尝试用大图作为备选 ★★★
                 img.addEventListener('error', function() {
-                    var currentSrc = this.src;
-                    
-                    if (currentSrc === urls.uhd && urls.hd) {
-                        this.src = urls.hd;
-                        console.log('🔄 UHD 加载失败，降级为 HD:', urls.hd);
-                    } else if (currentSrc === urls.hd && urls.fhd) {
-                        this.src = urls.fhd;
-                        console.log('🔄 HD 加载失败，降级为 FHD:', urls.fhd);
-                    } else {
-                        this.classList.add('loaded');
-                        placeholderBg.classList.add('hidden');
-                        console.warn('❌ 所有格式加载失败:', item.date);
+                    // 如果当前 src 是缩略图且加载失败，尝试用大图（但保持缩略图尺寸）
+                    if (this.src === item.thumb && urls.uhd) {
+                        // 用 UHD 作为备选（虽然大，但能显示）
+                        this.src = urls.uhd;
+                        console.log('🔄 缩略图加载失败，使用大图作为备选:', item.date);
+                        return;
                     }
+                    // 如果大图也失败，显示占位
+                    this.classList.add('loaded');
+                    placeholderBg.classList.add('hidden');
+                    console.warn('❌ 图片加载失败:', item.date);
                 });
 
                 card.addEventListener('click', function() {
@@ -1398,7 +1391,8 @@ html, body {
             previewOverlay.classList.add('active');
             document.body.style.overflow = 'hidden';
             var urls = currentPreviewItem.urls;
-            var imgSrc = urls.uhd || urls.hd || urls.fhd || '';
+            // ★★★ 大图预览优先使用 UHD ★★★
+            var imgSrc = urls.uhd || urls.hd || '';
             previewOverlay.style.setProperty('--bg-url', 'url(' + imgSrc + ')');
 
             navToggle.classList.add('hidden');
@@ -1445,39 +1439,20 @@ html, body {
             currentPreviewItem = allData[currentPreviewIndex];
 
             var urls = currentPreviewItem.urls;
-            var imgSrc = urls.uhd || urls.hd || urls.fhd || '';
+            // ★★★ 大图预览：优先 UHD，降级到 1920x1200 ★★★
+            var imgSrc = urls.uhd || urls.hd || '';
             
-            // ★★★ 使用更可靠的加载方式 ★★★
-            var img = new Image();
-            img.onload = function() {
-                previewImg.src = imgSrc;
-                previewImg.onerror = null;
-            };
-            img.onerror = function() {
-                // 如果 UHD 加载失败，尝试 HD
-                if (imgSrc === urls.uhd && urls.hd) {
-                    previewImg.src = urls.hd;
-                } else if (imgSrc === urls.hd && urls.fhd) {
-                    previewImg.src = urls.fhd;
-                }
-            };
-            img.src = imgSrc;
-            
-            // 直接设置 src，让浏览器自行处理
             previewImg.src = imgSrc;
             
-            // ★★★ 预览图片加载失败时的降级处理 ★★★
+            // ★★★ 预览大图加载失败时降级 ★★★
             previewImg.onerror = function() {
                 var currentSrc = this.src;
                 if (currentSrc === urls.uhd && urls.hd) {
                     this.src = urls.hd;
                     console.log('🔄 预览 UHD 失败，降级为 HD');
-                } else if (currentSrc === urls.hd && urls.fhd) {
-                    this.src = urls.fhd;
-                    console.log('🔄 预览 HD 失败，降级为 FHD');
                 } else {
                     this.alt = '图片加载失败';
-                    console.warn('❌ 预览所有格式加载失败:', currentPreviewItem.date);
+                    console.warn('❌ 预览图片加载失败:', currentPreviewItem.date);
                 }
             };
             
@@ -1585,7 +1560,8 @@ downloadMenu.querySelectorAll('a').forEach(function(item) {
             if (!item) return;
             
             var urls = item.urls;
-            var url = urls.uhd || urls.hd || urls.fhd || '';
+            // ★★★ 下载优先使用 UHD ★★★
+            var url = urls.uhd || urls.hd || '';
             var resolutions = {
                 '4k': { w: 3840, h: 2160 },
                 'fhd': { w: 1920, h: 1080 },
@@ -1636,8 +1612,6 @@ downloadMenu.querySelectorAll('a').forEach(function(item) {
                     var fallbackUrl = '';
                     if (downloadUrl === urls.uhd && urls.hd) {
                         fallbackUrl = urls.hd;
-                    } else if (downloadUrl === urls.hd && urls.fhd) {
-                        fallbackUrl = urls.fhd;
                     }
                     if (fallbackUrl) {
                         tryDownload(fallbackUrl);
