@@ -2,7 +2,7 @@ import fs from 'fs';
 import { join } from 'path';
 import fetch from 'node-fetch';
 
-const endpoint = 'https://www.bing.com/HPImageArchive.aspx?format=js&idx=0&n=10&mkt=en-US';
+const endpoint = 'https://cn.bing.com/HPImageArchive.aspx?format=js&idx=0&n=10&mkt=zh-CN';
 const dataFilePath = join(__dirname, '..', 'json', 'data.json');
 
 fetch(endpoint)
