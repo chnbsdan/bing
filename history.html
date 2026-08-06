@@ -1,4 +1,3 @@
-<!-- history.html -->
 <!DOCTYPE html>
 <html lang="zh-CN">
 <head>
@@ -9,7 +8,7 @@
     <link rel="shortcut icon" href="/favicon.ico" type="image/x-icon" />
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" />
     <style>
-         /* ===== CSS 变量 ===== */
+        /* ===== CSS 变量 ===== */
 :root {
     --bg-primary: #0d0d1a;
     --bg-secondary: #1a1a2e;
@@ -126,7 +125,7 @@ html, body {
     50% { opacity: 0.5; transform: scale(0.8); }
 }
 
-/* ===== ★★★ 应用 - Flex 布局（修复叠加） ★★★ ===== */
+/* ===== ★★★ 应用 - Flex 布局 ★★★ ===== */
 .app { 
     display: flex; 
     flex-direction: column; 
@@ -635,7 +634,6 @@ html, body {
    ★★★ Twikoo 暗色模式 - 强制白底黑字 ★★★
    ============================================================ */
 
-/* 评论弹窗整体 - 强制白色背景 */
 [data-theme="dark"] .comment-modal {
     background: #ffffff !important;
     border-color: #e8e8e8 !important;
@@ -659,7 +657,6 @@ html, body {
     color: #333 !important;
 }
 
-/* ★★★ 强制 Twikoo 所有文字变黑 ★★★ */
 [data-theme="dark"] .tk-comments,
 [data-theme="dark"] .tk-comment,
 [data-theme="dark"] .tk-input,
@@ -671,7 +668,6 @@ html, body {
     color: #333333 !important;
 }
 
-/* 输入框 - 白底黑字 */
 [data-theme="dark"] .tk-input {
     background: #f5f7fa !important;
     border: 1px solid #e8ecf1 !important;
@@ -686,7 +682,6 @@ html, body {
     color: #aaa !important;
 }
 
-/* 评论列表 - 黑字 */
 [data-theme="dark"] .tk-comment .tk-nick,
 [data-theme="dark"] .tk-comment .tk-nick a {
     color: #1a1a2e !important;
@@ -699,7 +694,6 @@ html, body {
     color: #aaa !important;
 }
 
-/* 操作按钮 */
 [data-theme="dark"] .tk-comment .tk-actions .tk-action {
     color: #999 !important;
 }
@@ -710,13 +704,11 @@ html, body {
     color: #999 !important;
 }
 
-/* 提交按钮 */
 [data-theme="dark"] .tk-submit .tk-btn {
     background: #4fc3f7 !important;
     color: #ffffff !important;
 }
 
-/* 评论计数、排序 */
 [data-theme="dark"] .tk-meta .tk-count {
     color: #666 !important;
 }
@@ -727,7 +719,6 @@ html, body {
     color: #4fc3f7 !important;
 }
 
-/* 加载更多 */
 [data-theme="dark"] .tk-loading .tk-load-more {
     color: #aaa !important;
 }
@@ -735,12 +726,10 @@ html, body {
     color: #4fc3f7 !important;
 }
 
-/* 空状态 */
 [data-theme="dark"] .tk-empty {
     color: #aaa !important;
 }
 
-/* 底部 Powered by Twikoo */
 [data-theme="dark"] .tk-footer,
 [data-theme="dark"] .tk-powered,
 [data-theme="dark"] .tk-footer a,
@@ -824,7 +813,7 @@ html, body {
         <div class="badge"><i class="fas fa-images"></i> <span id="totalNavCount">0</span> 张</div>
         <div class="search-box"><input type="text" id="searchInput" placeholder="搜索年份/关键词..." /><button class="search-btn" id="searchBtn"><i class="fas fa-search"></i></button></div>
         <div class="nav-actions">
-            <a href="/" class="btn-back"><i class="fas fa-arrow-left"></i> 返回首页</a>
+            <a href="/" class="btn-back" style="background:var(--input-bg);border:1px solid var(--border-color);color:var(--text-secondary);padding:5px 12px;border-radius:6px;font-size:13px;cursor:pointer;transition:0.2s;font-family:inherit;display:inline-flex;align-items:center;gap:6px;text-decoration:none;"><i class="fas fa-arrow-left"></i> 返回首页</a>
             <button id="commentNavBtn"><i class="fas fa-comment"></i> 留言 <span class="badge-dot"></span></button>
             <a href="/api" target="_blank"><i class="fas fa-code"></i> API</a>
             <a href="https://aoso.hangdn.com" target="_blank" rel="noopener"><i class="fas fa-blog"></i> 博客</a>
@@ -853,17 +842,20 @@ html, body {
         <i class="fas fa-arrow-up"></i>
     </button>
 
-    <!-- ============================================================
+   <!-- ============================================================
     大图预览
     ============================================================ -->
     <div class="preview-overlay" id="previewOverlay">
         <button class="arrow arrow-left" id="prevPreviewBtn"><i class="fas fa-chevron-left"></i></button>
         <button class="arrow arrow-right" id="nextPreviewBtn"><i class="fas fa-chevron-right"></i></button>
+
         <div class="preview-container">
             <img class="preview-image" id="previewImg" src="" alt="预览" />
         </div>
+
         <div class="toolbar" id="toolbar">
             <a href="/" class="btn" title="返回首页"><i class="fas fa-home"></i> <span>首页</span></a>
+
             <div class="dropdown" id="downloadDropdown">
                 <button class="btn" id="downloadBtn"><i class="fas fa-download"></i> <span>下载</span> <i class="fas fa-chevron-down"></i></button>
                 <div class="dropdown-menu" id="downloadMenu">
@@ -875,6 +867,7 @@ html, body {
                     <a href="#" data-res="mobile_s">手机 (768×1280)</a>
                 </div>
             </div>
+
             <div class="donate-qr-wrapper">
                 <button class="btn" id="donateBtn"><i class="fas fa-mug-hot"></i><span>打赏</span></button>
                 <div class="qr-tooltip">
@@ -891,19 +884,23 @@ html, body {
                     <div class="qr-footer"><i class="fas fa-mug-hot"></i> 您的支持是我持续更新的动力</div>
                 </div>
             </div>
+
             <button class="btn" id="closePreviewBtn"><i class="fas fa-times"></i></button>
         </div>
+
         <div class="info-panel" id="infoPanel">
             <div class="copyright" id="previewCopyright"></div>
             <div class="date" id="previewDate"></div>
             <div class="desc" id="previewDesc"></div>
         </div>
+
     </div>
 
+   
     <!-- Twikoo CDN -->
     <script src="https://cdn.jsdelivr.net/npm/twikoo@1.6.41/dist/twikoo.min.js"></script>
     <script>
-        // ============================================================
+               // ============================================================
         // 1. 路径适配
         // ============================================================
         function getBasePath() {
@@ -1080,11 +1077,12 @@ html, body {
         async function loadData() {
             showProgress();
             try {
-                // ★★★ 读取历史数据 ★★★
                 var url = BASE_PATH + '/json/history-2010-2019.json';
                 var res = await fetch(url);
                 if (!res.ok) throw new Error('HTTP ' + res.status);
                 var rawData = await res.json();
+                
+                console.log('原始数据条数:', rawData.length);
                 
                 if (!Array.isArray(rawData) || rawData.length === 0) {
                     showEmpty();
@@ -1094,26 +1092,21 @@ html, body {
 
                 // ★★★ 转换数据格式 ★★★
                 allData = rawData.map(function(item) {
-                    // 处理日期格式：可能是 YYYYMMDD 或 YYYY-MM-DD
-                    var dateStr = item.startdate || item.date || '';
-                    if (dateStr.indexOf('-') !== -1) {
-                        dateStr = dateStr.replace(/-/g, '');
-                    }
-                    var formattedDate = dateStr.slice(0,4) + '-' + dateStr.slice(4,6) + '-' + dateStr.slice(6,8);
+                    // 处理日期格式：YYYY-MM-DD → YYYYMMDD → 显示为 YYYY-MM-DD
+                    var dateStr = item.date || '';
+                    var formattedDate = dateStr.replace(/-/g, '');
+                    var displayDate = formattedDate.slice(0,4) + '-' + formattedDate.slice(4,6) + '-' + formattedDate.slice(6,8);
                     
-                    // 处理图片 URL
+                    // ★★★ 图片链接和缩略图 ★★★
                     var imageUrl = item.url || '';
-                    var thumbUrl = imageUrl;
-                    
-                    // 如果是 Bing 链接，尝试生成缩略图
-                    if (imageUrl.indexOf('bing.com') !== -1 && imageUrl.indexOf('th?id=') !== -1) {
-                        var baseUrl = imageUrl.split('&')[0];
-                        thumbUrl = baseUrl.replace('_UHD.jpg', '_400x240.jpg');
+                    // 使用 images.weserv.nl 生成 400x240 缩略图
+                    var thumbUrl = '';
+                    if (imageUrl) {
+                        thumbUrl = 'https://images.weserv.nl/?url=' + encodeURIComponent(imageUrl) + '&w=400&h=240&fit=cover';
                     }
-                    // 如果是 npanuhin 的链接，没有缩略图，直接用原图
                     
                     return {
-                        date: formattedDate,
+                        date: displayDate,
                         copyright: item.copyright || '',
                         title: item.title || '',
                         jpg: imageUrl,
@@ -1121,6 +1114,8 @@ html, body {
                         thumb: thumbUrl
                     };
                 });
+
+                console.log('转换后数据条数:', allData.length);
 
                 allData.sort(function(a, b) { return b.date.localeCompare(a.date); });
                 filteredData = [];
