@@ -3,13 +3,23 @@ export async function onRequest(context) {
   const { request } = context;
   const url = new URL(request.url);
 
-  // 处理参数
   const format = url.searchParams.get("format") || "webp";
   const redirect = url.searchParams.get("redirect") === "true";
-  // ★★★ 新增：size 参数，用于控制图片尺寸 ★★★
   const size = parseInt(url.searchParams.get("size")) || 0;
 
-  // 验证参数
+  // ★★★ Bing 官方支持的尺寸列表 ★★★
+  const SUPPORTED_SIZES = [400, 640, 768, 1024, 1366, 1920, 2560];
+  // ★★★ 尺寸到实际分辨率的映射 ★★★
+  const SIZE_MAP = {
+    400: '400x240',
+    640: '640x360',
+    768: '768x432',
+    1024: '1024x576',
+    1366: '1366x768',
+    1920: '1920x1080',
+    2560: '2560x1440',
+  };
+
   const allowedFormats = ["webp", "jpeg", "original"];
   if (!allowedFormats.includes(format)) {
     return new Response("Invalid format parameter", { status: 400 });
@@ -18,6 +28,17 @@ export async function onRequest(context) {
   // ★★★ 验证 size 参数 ★★★
   if (size < 0 || size > 3840) {
     return new Response("Invalid size parameter, must be between 0 and 3840", { status: 400 });
+  }
+
+  // ★★★ 如果指定了不支持的尺寸，自动修正为最接近的支持尺寸 ★★★
+  let actualSize = size;
+  if (size > 0 && !SUPPORTED_SIZES.includes(size)) {
+    // 找到最接近的支持尺寸
+    const closest = SUPPORTED_SIZES.reduce((prev, curr) => {
+      return Math.abs(curr - size) < Math.abs(prev - size) ? curr : prev;
+    });
+    actualSize = closest;
+    console.log(`⚠️ 尺寸 ${size} 不支持，自动修正为 ${actualSize}`);
   }
 
   try {
@@ -35,40 +56,32 @@ export async function onRequest(context) {
       return new Response("No data found", { status: 404 });
     }
 
-    // 按 startdate 排序，取最新一张
     data.sort((a, b) => b.startdate.localeCompare(a.startdate));
     const latest = data[0];
 
-    // ★★★ 构造图片 URL ★★★
     const baseUrl = 'https://www.bing.com';
     let imageUrl;
 
-    // ★★★ 根据 size 参数构造不同尺寸的 URL ★★★
-    if (size > 0) {
-      // 计算高度：保持 16:9 比例
-      const height = Math.round(size * 9 / 16);
-      // 构造带尺寸的 URL
-      imageUrl = `${baseUrl}${latest.urlbase}_${size}x${height}.jpg`;
+    // ★★★ 根据实际尺寸构造 URL ★★★
+    if (actualSize > 0 && SIZE_MAP[actualSize]) {
+      imageUrl = `${baseUrl}${latest.urlbase}_${SIZE_MAP[actualSize]}.jpg`;
     } else {
-      // 默认返回 UHD 原图
       imageUrl = `${baseUrl}${latest.urlbase}_UHD.jpg`;
     }
 
-    console.log(`📸 daily: ${latest.startdate}, size: ${size || 'UHD'}, url: ${imageUrl}`);
+    console.log(`📸 daily: ${latest.startdate}, size: ${actualSize || 'UHD'}, url: ${imageUrl}`);
 
-    // 如果请求重定向，直接跳转
     if (redirect) {
       return Response.redirect(imageUrl, 302);
     }
 
-    // ★★★ 多格式降级支持 ★★★
+    // ★★★ 降级支持 ★★★
     const imageUrls = [
       imageUrl,
       `${baseUrl}${latest.urlbase}_1920x1080.jpg`,
       `${baseUrl}${latest.urlbase}_1920x1200.jpg`,
     ];
 
-    // 尝试加载图片，失败则降级
     async function fetchImageWithFallback(urls) {
       for (const url of urls) {
         try {
