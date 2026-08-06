@@ -1072,73 +1072,68 @@ html, body {
         var toolbarVisible = true;
 
         // ============================================================
-        // 6.1 加载数据 - ★★★ 从 /json/history-2010-2019.json 读取 ★★★
-        // ============================================================
-        async function loadData() {
-            showProgress();
-            try {
-                // ★★★ 关键修复：添加时间戳和 Cache-Control 头，绕过缓存 ★★★
-                var url = '/json/history-2010-2019.json?t=' + Date.now();
-                var res = await fetch(url, {
-                    headers: {
-                        'Cache-Control': 'no-cache, no-store, must-revalidate',
-                        'Pragma': 'no-cache',
-                        'Expires': '0'
-                    }
-                });
-                if (!res.ok) throw new Error('HTTP ' + res.status);
-                var rawData = await res.json();
-                
-                console.log('原始数据条数:', rawData.length);
-                
-                if (!Array.isArray(rawData) || rawData.length === 0) {
-                    showEmpty();
-                    hideProgress();
-                    return;
-                }
-
-                // ★★★ 转换数据格式 ★★★
-                allData = rawData.map(function(item) {
-                    // 处理日期格式：YYYY-MM-DD → YYYYMMDD → 显示为 YYYY-MM-DD
-                    var dateStr = item.date || '';
-                    var formattedDate = dateStr.replace(/-/g, '');
-                    var displayDate = formattedDate.slice(0,4) + '-' + formattedDate.slice(4,6) + '-' + formattedDate.slice(6,8);
-                    
-                    // ★★★ 图片链接和缩略图 ★★★
-                    var imageUrl = item.url || '';
-                    // 使用 images.weserv.nl 生成 400x240 缩略图
-                    var thumbUrl = '';
-                    if (imageUrl) {
-                        thumbUrl = 'https://images.weserv.nl/?url=' + encodeURIComponent(imageUrl) + '&w=400&h=240&fit=cover';
-                    }
-                    
-                    return {
-                        date: displayDate,
-                        copyright: item.copyright || '',
-                        title: item.title || '',
-                        jpg: imageUrl,
-                        webp: imageUrl,
-                        thumb: thumbUrl
-                    };
-                });
-
-                console.log('转换后数据条数:', allData.length);
-
-                allData.sort(function(a, b) { return b.date.localeCompare(a.date); });
-                filteredData = [];
-                totalNavCount.textContent = allData.length;
-                totalPages = Math.ceil(allData.length / PAGE_SIZE);
-                currentPage = 1;
-                hasMore = true;
-                grid.innerHTML = '';
-                renderPage(1);
-                hideProgress();
-            } catch (err) {
-                console.error('加载失败:', err);
-                showEmpty();
-                hideProgress();
+// 6.1 加载数据 - ★★★ 从 /json/history-2010-2019.json 读取 ★★★
+// ============================================================
+async function loadData() {
+    showProgress();
+    try {
+        // ★★★ 添加时间戳绕过缓存 ★★★
+        var url = '/json/history-2010-2019.json?t=' + Date.now();
+        var res = await fetch(url, {
+            headers: {
+                'Cache-Control': 'no-cache, no-store, must-revalidate',
+                'Pragma': 'no-cache',
+                'Expires': '0'
             }
+        });
+        if (!res.ok) throw new Error('HTTP ' + res.status);
+        var rawData = await res.json();
+        
+        console.log('原始数据条数:', rawData.length);
+        
+        if (!Array.isArray(rawData) || rawData.length === 0) {
+            showEmpty();
+            hideProgress();
+            return;
         }
+
+        // ★★★ 转换数据格式 ★★★
+        allData = rawData.map(function(item) {
+            var dateStr = item.date || '';
+            var formattedDate = dateStr.replace(/-/g, '');
+            var displayDate = formattedDate.slice(0,4) + '-' + formattedDate.slice(4,6) + '-' + formattedDate.slice(6,8);
+            
+            var imageUrl = item.url || '';
+            // ★★★ 直接使用原图，让浏览器压缩显示（不经过 weserv） ★★★
+            var thumbUrl = imageUrl;
+            
+            return {
+                date: displayDate,
+                copyright: item.copyright || '',
+                title: item.title || '',
+                jpg: imageUrl,
+                webp: imageUrl,
+                thumb: thumbUrl
+            };
+        });
+
+        console.log('转换后数据条数:', allData.length);
+
+        allData.sort(function(a, b) { return b.date.localeCompare(a.date); });
+        filteredData = [];
+        totalNavCount.textContent = allData.length;
+        totalPages = Math.ceil(allData.length / PAGE_SIZE);
+        currentPage = 1;
+        hasMore = true;
+        grid.innerHTML = '';
+        renderPage(1);
+        hideProgress();
+    } catch (err) {
+        console.error('加载失败:', err);
+        showEmpty();
+        hideProgress();
+    }
+}
 
         // ============================================================
         // 6.2 渲染页面
