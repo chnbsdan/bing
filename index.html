@@ -869,7 +869,7 @@ html, body {
             <div class="dropdown" id="downloadDropdown">
                 <button class="btn" id="downloadBtn"><i class="fas fa-download"></i> <span>下载</span> <i class="fas fa-chevron-down"></i></button>
                 <div class="dropdown-menu" id="downloadMenu">
-                    <a href="#" data-res="4k">4K (3840×2160)</a>
+                    <a href="#" data-res="4k">4K (UHD原图)</a>
                     <a href="#" data-res="fhd">全高清 (1920×1080)</a>
                     <a href="#" data-res="hd">高清 (1366×768)</a>
                     <div class="divider"></div>
@@ -928,8 +928,6 @@ html, body {
             if (url.startsWith('/')) return BASE_PATH + url;
             return url;
         }
-
-        // ★★★ 不再需要 getThumbnailUrl 函数，因为数据中已有 thumb 字段 ★★★
 
         // ============================================================
         // 2. 主题切换
@@ -1091,7 +1089,6 @@ html, body {
         async function loadData() {
             showProgress();
             try {
-                // ★★★ 修改：从 /json/data.json 读取 ★★★
                 var url = BASE_PATH + '/json/data.json';
                 var res = await fetch(url);
                 if (!res.ok) throw new Error('HTTP ' + res.status);
@@ -1103,18 +1100,16 @@ html, body {
                     return;
                 }
 
-                // ★★★ 转换数据格式：bing-wallpaper2 → 页面需要的格式 ★★★
+                // ★★★ 转换数据格式 ★★★
                 allData = rawData.map(function(item) {
                     var dateStr = item.startdate;
                     var formattedDate = dateStr.slice(0,4) + '-' + dateStr.slice(4,6) + '-' + dateStr.slice(6,8);
                     var baseUrl = 'https://www.bing.com' + item.urlbase;
                     
-                    // ★★★ 生成多个格式的链接，按优先级排列 ★★★
                     var urls = {
-                        // 大图：优先使用 UHD，降级使用 1920x1200
                         uhd: baseUrl + '_UHD.jpg',
+                        fhd: baseUrl + '_1920x1080.jpg',
                         hd: baseUrl + '_1920x1200.jpg',
-                        // ★★★ 小卡片缩略图：只使用 _400x240.jpg ★★★
                         thumb: baseUrl + '_400x240.jpg'
                     };
                     
@@ -1122,11 +1117,9 @@ html, body {
                         date: formattedDate,
                         copyright: item.copyright || '',
                         title: item.title || '',
-                        // ★★★ 存储所有格式的链接 ★★★
                         urls: urls,
-                        // 默认优先使用 UHD
-                        jpg: urls.uhd,
-                        webp: urls.uhd,
+                        jpg: urls.fhd,
+                        webp: urls.fhd,
                         thumb: urls.thumb
                     };
                 });
@@ -1148,7 +1141,7 @@ html, body {
         }
 
         // ============================================================
-        // 6.2 渲染页面 - ★★★ 追加模式 ★★★
+        // 6.2 渲染页面 - ★★★ 小卡片使用 _400x240.jpg，降级到 _1920x1080.jpg ★★★
         // ============================================================
         function renderPage(page) {
             var data = filteredData.length > 0 ? filteredData : allData;
@@ -1177,7 +1170,6 @@ html, body {
                 var card = document.createElement('div');
                 card.className = 'card';
 
-                // ★★★ 小卡片只使用 _400x240.jpg ★★★
                 var thumbSrc = item.thumb || '';
                 var urls = item.urls;
 
@@ -1202,16 +1194,13 @@ html, body {
                     placeholderBg.classList.add('hidden');
                 }
                 
-                // ★★★ 缩略图加载失败时，尝试用大图作为备选 ★★★
+                // ★★★ 小卡片降级：_400x240.jpg → _1920x1080.jpg ★★★
                 img.addEventListener('error', function() {
-                    // 如果当前 src 是缩略图且加载失败，尝试用大图（但保持缩略图尺寸）
-                    if (this.src === item.thumb && urls.uhd) {
-                        // 用 UHD 作为备选（虽然大，但能显示）
-                        this.src = urls.uhd;
-                        console.log('🔄 缩略图加载失败，使用大图作为备选:', item.date);
+                    if (this.src === item.thumb && urls.fhd) {
+                        this.src = urls.fhd;
+                        console.log('🔄 缩略图降级:', item.date);
                         return;
                     }
-                    // 如果大图也失败，显示占位
                     this.classList.add('loaded');
                     placeholderBg.classList.add('hidden');
                     console.warn('❌ 图片加载失败:', item.date);
@@ -1377,7 +1366,7 @@ html, body {
         });
 
         // ============================================================
-        // 7. 大图预览
+        // 7. 大图预览 - ★★★ 统一使用 _1920x1080.jpg ★★★
         // ============================================================
 
         function openPreview(index) {
@@ -1391,8 +1380,8 @@ html, body {
             previewOverlay.classList.add('active');
             document.body.style.overflow = 'hidden';
             var urls = currentPreviewItem.urls;
-            // ★★★ 大图预览优先使用 UHD ★★★
-            var imgSrc = urls.uhd || urls.hd || '';
+            // ★★★ 大图预览统一使用 1920x1080 ★★★
+            var imgSrc = urls.fhd || '';
             previewOverlay.style.setProperty('--bg-url', 'url(' + imgSrc + ')');
 
             navToggle.classList.add('hidden');
@@ -1439,17 +1428,19 @@ html, body {
             currentPreviewItem = allData[currentPreviewIndex];
 
             var urls = currentPreviewItem.urls;
-            // ★★★ 大图预览：优先 UHD，降级到 1920x1200 ★★★
-            var imgSrc = urls.uhd || urls.hd || '';
+            // ★★★ 大图预览统一使用 1920x1080 ★★★
+            var imgSrc = urls.fhd || '';
             
             previewImg.src = imgSrc;
             
-            // ★★★ 预览大图加载失败时降级 ★★★
             previewImg.onerror = function() {
                 var currentSrc = this.src;
-                if (currentSrc === urls.uhd && urls.hd) {
+                if (currentSrc === urls.fhd && urls.hd) {
                     this.src = urls.hd;
-                    console.log('🔄 预览 UHD 失败，降级为 HD');
+                    console.log('🔄 FHD 失败，降级为 HD');
+                } else if (currentSrc === urls.hd && urls.uhd) {
+                    this.src = urls.uhd;
+                    console.log('🔄 HD 失败，降级为 UHD');
                 } else {
                     this.alt = '图片加载失败';
                     console.warn('❌ 预览图片加载失败:', currentPreviewItem.date);
@@ -1541,29 +1532,29 @@ html, body {
         closePreviewBtn.addEventListener('click', closePreview);
 
        // ============================================================
-       // 7.1 下载下拉菜单 - 悬停触发（纯 CSS 控制）
+       // 7.1 下载 - ★★★ 4K 用 UHD 原图 ★★★
       // ============================================================
 
-// 点击下载选项执行下载
-downloadMenu.querySelectorAll('a').forEach(function(item) {
-    item.addEventListener('click', function(e) {
-        e.preventDefault();
-        var res = this.getAttribute('data-res');
-        downloadImage(currentPreviewIndex, res);
-    });
-});
+        downloadMenu.querySelectorAll('a').forEach(function(item) {
+            item.addEventListener('click', function(e) {
+                e.preventDefault();
+                var res = this.getAttribute('data-res');
+                downloadImage(currentPreviewIndex, res);
+            });
+        });
 
-        // 核心下载函数
+        // ★★★ 核心下载函数 ★★★
         function downloadImage(index, resolution) {
             if (!allData || allData.length === 0) return;
             var item = allData[index];
             if (!item) return;
             
             var urls = item.urls;
-            // ★★★ 下载优先使用 UHD ★★★
-            var url = urls.uhd || urls.hd || '';
+            var url = urls.uhd || urls.fhd || '';
+            
+            // ★★★ 4K 用 UHD 原图，不限制尺寸 ★★★
             var resolutions = {
-                '4k': { w: 3840, h: 2160 },
+                '4k': { w: 0, h: 0 },
                 'fhd': { w: 1920, h: 1080 },
                 'hd': { w: 1366, h: 768 },
                 'mobile': { w: 1080, h: 1920 },
@@ -1572,11 +1563,14 @@ downloadMenu.querySelectorAll('a').forEach(function(item) {
             var res = resolutions[resolution] || resolutions['fhd'];
             var downloadUrl = url;
             
-            // 1. 准备图片下载地址
-            if (resolution === 'mobile' || resolution === 'mobile_s') { 
+            // 准备图片下载地址
+            if (resolution === '4k') {
+                // ★★★ 4K 直接用 UHD 原图 ★★★
+                downloadUrl = urls.uhd || urls.fhd || '';
+            } else if (resolution === 'mobile' || resolution === 'mobile_s') {
                 if (url.indexOf('th?id=') !== -1) {
                     var baseUrl = url.split('&')[0];
-                    downloadUrl = baseUrl + '&w=1920&h=1080';
+                    downloadUrl = baseUrl + '&w=' + res.w + '&h=' + res.h;
                 }
             } else {
                 if (url.indexOf('th?id=') !== -1) {
@@ -1589,7 +1583,6 @@ downloadMenu.querySelectorAll('a').forEach(function(item) {
             
             console.log('📥 开始下载: ' + fileName);
             
-            // ★★★ 尝试下载，如果失败则尝试降级版本 ★★★
             function tryDownload(downloadUrl) {
                 fetch(downloadUrl, {
                     mode: 'cors',
@@ -1608,16 +1601,16 @@ downloadMenu.querySelectorAll('a').forEach(function(item) {
                 })
                 .catch(function(err) {
                     console.warn('⚠️ 下载失败，尝试降级版本:', err.message);
-                    // 尝试降级到下一级
                     var fallbackUrl = '';
-                    if (downloadUrl === urls.uhd && urls.hd) {
+                    if (downloadUrl === urls.uhd && urls.fhd) {
+                        fallbackUrl = urls.fhd;
+                    } else if (downloadUrl === urls.fhd && urls.hd) {
                         fallbackUrl = urls.hd;
                     }
                     if (fallbackUrl) {
                         tryDownload(fallbackUrl);
                     } else {
                         console.warn('❌ 所有版本下载失败');
-                        // 最后兜底
                         var link = document.createElement('a');
                         link.href = downloadUrl + (downloadUrl.indexOf('?') === -1 ? '?' : '&') + '_t=' + Date.now();
                         link.download = fileName;
@@ -1632,7 +1625,7 @@ downloadMenu.querySelectorAll('a').forEach(function(item) {
             tryDownload(downloadUrl);
         }
 
-        // ★★★ 手机竖屏裁剪函数 (支持动态识别 1080x1920 和 768x1280) ★★★
+        // ★★★ 手机竖屏裁剪函数 ★★★
         function cropToMobile(blob, fileName, resolution) {
             return new Promise(function(resolve, reject) {
                 var img = new Image();
@@ -1768,7 +1761,7 @@ downloadMenu.querySelectorAll('a').forEach(function(item) {
         // ============================================================
         loadData();
         console.log('✅ 大图预览已加载');
-        console.log('📊 数据源: /json/data.json (bing-wallpaper2 格式)');
+        console.log('📊 数据源: /json/data.json');
         console.log('💡 留言按钮在导航栏（汉堡菜单）内');
         console.log('💡 评论系统: Twikoo');
         console.log('📜 滚动加载模式已启用');
@@ -1790,11 +1783,9 @@ downloadMenu.querySelectorAll('a').forEach(function(item) {
             }
         })();
 
-        // ★★★ 绑定滚动事件 ★★★
         grid.addEventListener('scroll', checkScroll);
         window.addEventListener('resize', checkScroll);
         
-        // ★★★ MutationObserver 只监控新增卡片，不触发加载 ★★★
         var observer = new MutationObserver(function() {
             if (grid.scrollTop > 500) {
                 backToTop.classList.add('visible');
