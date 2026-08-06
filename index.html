@@ -929,15 +929,7 @@ html, body {
             return url;
         }
 
-        function getThumbnailUrl(url) {
-            if (!url) return '';
-            if (url.indexOf('th?id=') !== -1) {
-                var baseUrl = url.split('&')[0];
-                var thumbUrl = baseUrl.replace('_UHD.jpg', '_400x240.jpg');
-                return thumbUrl;
-            }
-            return url;
-        }
+        // ★★★ 不再需要 getThumbnailUrl 函数，因为数据中已有 thumb 字段 ★★★
 
         // ============================================================
         // 2. 主题切换
@@ -1115,13 +1107,30 @@ html, body {
                 allData = rawData.map(function(item) {
                     var dateStr = item.startdate;
                     var formattedDate = dateStr.slice(0,4) + '-' + dateStr.slice(4,6) + '-' + dateStr.slice(6,8);
+                    var baseUrl = 'https://www.bing.com' + item.urlbase;
+                    
+                    // ★★★ 生成多个格式的链接，按优先级排列 ★★★
+                    var urls = {
+                        // 优先使用 UHD
+                        uhd: baseUrl + '_UHD.jpg',
+                        // 降级使用 1920x1200
+                        hd: baseUrl + '_1920x1200.jpg',
+                        // 再降级使用 1920x1080
+                        fhd: baseUrl + '_1920x1080.jpg',
+                        // 缩略图
+                        thumb: baseUrl + '_400x240.jpg'
+                    };
+                    
                     return {
                         date: formattedDate,
                         copyright: item.copyright || '',
                         title: item.title || '',
-                        jpg: 'https://www.bing.com' + item.urlbase + '_UHD.jpg',
-                        webp: 'https://www.bing.com' + item.urlbase + '_UHD.jpg',
-                        thumb: 'https://www.bing.com' + item.urlbase + '_400x240.jpg'
+                        // ★★★ 存储所有格式的链接 ★★★
+                        urls: urls,
+                        // 默认优先使用 UHD
+                        jpg: urls.uhd,
+                        webp: urls.uhd,
+                        thumb: urls.thumb
                     };
                 });
 
@@ -1171,14 +1180,15 @@ html, body {
                 var card = document.createElement('div');
                 card.className = 'card';
 
-                var thumbSrc = item.thumb || item.webp || item.jpg || '';
-                var fullImgSrc = item.webp || item.jpg || '';
-                var fallback = item.jpg || '';
-                var placeholderSrc = getThumbnailUrl(thumbSrc);
+                var thumbSrc = item.thumb || '';
+                var urls = item.urls;
+                var uhdSrc = urls.uhd || '';
+                var hdSrc = urls.hd || '';
+                var fhdSrc = urls.fhd || '';
 
                 card.innerHTML =
-                    '<div class="placeholder-bg" style="background-image: url(' + placeholderSrc + ');"></div>' +
-                    '<img src="' + thumbSrc + '" alt="' + (item.copyright || item.date) + '" loading="lazy" />' +
+                    '<div class="placeholder-bg" style="background-image: url(' + thumbSrc + ');"></div>' +
+                    '<img src="' + uhdSrc + '" alt="' + (item.copyright || item.date) + '" loading="lazy" />' +
                     '<div class="info">' +
                     '<div class="date">' + item.date + '</div>' +
                     '<div class="title">' + (item.title || item.copyright || '无标题') + '</div>' +
@@ -1196,14 +1206,21 @@ html, body {
                     img.classList.add('loaded');
                     placeholderBg.classList.add('hidden');
                 }
+                
+                // ★★★ 图片加载失败时的降级处理 ★★★
                 img.addEventListener('error', function() {
-                    if (fullImgSrc && fullImgSrc !== thumbSrc) {
-                        this.src = fullImgSrc;
-                    } else if (fallback && fallback !== thumbSrc) {
-                        this.src = fallback;
+                    var currentSrc = this.src;
+                    
+                    if (currentSrc === urls.uhd && urls.hd) {
+                        this.src = urls.hd;
+                        console.log('🔄 UHD 加载失败，降级为 HD:', urls.hd);
+                    } else if (currentSrc === urls.hd && urls.fhd) {
+                        this.src = urls.fhd;
+                        console.log('🔄 HD 加载失败，降级为 FHD:', urls.fhd);
                     } else {
                         this.classList.add('loaded');
                         placeholderBg.classList.add('hidden');
+                        console.warn('❌ 所有格式加载失败:', item.date);
                     }
                 });
 
@@ -1380,7 +1397,8 @@ html, body {
             showPreview(currentPreviewIndex);
             previewOverlay.classList.add('active');
             document.body.style.overflow = 'hidden';
-            var imgSrc = currentPreviewItem.jpg || currentPreviewItem.webp || '';
+            var urls = currentPreviewItem.urls;
+            var imgSrc = urls.uhd || urls.hd || urls.fhd || '';
             previewOverlay.style.setProperty('--bg-url', 'url(' + imgSrc + ')');
 
             navToggle.classList.add('hidden');
@@ -1426,8 +1444,43 @@ html, body {
             currentPreviewIndex = index;
             currentPreviewItem = allData[currentPreviewIndex];
 
-            var imgSrc = currentPreviewItem.jpg || currentPreviewItem.webp || '';
+            var urls = currentPreviewItem.urls;
+            var imgSrc = urls.uhd || urls.hd || urls.fhd || '';
+            
+            // ★★★ 使用更可靠的加载方式 ★★★
+            var img = new Image();
+            img.onload = function() {
+                previewImg.src = imgSrc;
+                previewImg.onerror = null;
+            };
+            img.onerror = function() {
+                // 如果 UHD 加载失败，尝试 HD
+                if (imgSrc === urls.uhd && urls.hd) {
+                    previewImg.src = urls.hd;
+                } else if (imgSrc === urls.hd && urls.fhd) {
+                    previewImg.src = urls.fhd;
+                }
+            };
+            img.src = imgSrc;
+            
+            // 直接设置 src，让浏览器自行处理
             previewImg.src = imgSrc;
+            
+            // ★★★ 预览图片加载失败时的降级处理 ★★★
+            previewImg.onerror = function() {
+                var currentSrc = this.src;
+                if (currentSrc === urls.uhd && urls.hd) {
+                    this.src = urls.hd;
+                    console.log('🔄 预览 UHD 失败，降级为 HD');
+                } else if (currentSrc === urls.hd && urls.fhd) {
+                    this.src = urls.fhd;
+                    console.log('🔄 预览 HD 失败，降级为 FHD');
+                } else {
+                    this.alt = '图片加载失败';
+                    console.warn('❌ 预览所有格式加载失败:', currentPreviewItem.date);
+                }
+            };
+            
             previewCopyright.textContent = currentPreviewItem.copyright || '';
             previewDate.textContent = currentPreviewItem.date || '';
             previewDesc.textContent = currentPreviewItem.title || '';
@@ -1531,7 +1584,8 @@ downloadMenu.querySelectorAll('a').forEach(function(item) {
             var item = allData[index];
             if (!item) return;
             
-            var url = item.jpg || item.webp || '';
+            var urls = item.urls;
+            var url = urls.uhd || urls.hd || urls.fhd || '';
             var resolutions = {
                 '4k': { w: 3840, h: 2160 },
                 'fhd': { w: 1920, h: 1080 },
@@ -1559,34 +1613,52 @@ downloadMenu.querySelectorAll('a').forEach(function(item) {
             
             console.log('📥 开始下载: ' + fileName);
             
-            fetch(downloadUrl, {
-                mode: 'cors',
-                headers: { 'Origin': window.location.origin }
-            })
-            .then(function(response) {
-                if (!response.ok) throw new Error('网络请求失败');
-                return response.blob();
-            })
-            .then(function(blob) {
-                if (resolution === 'mobile' || resolution === 'mobile_s') {
-                    return cropToMobile(blob, fileName, resolution);
-                } else {
-                    return downloadBlob(blob, fileName);
-                }
-            })
-            .catch(function(err) {
-                console.warn('⚠️ 下载失败，使用备用方法:', err.message);
-                var link = document.createElement('a');
-                link.href = downloadUrl + (downloadUrl.indexOf('?') === -1 ? '?' : '&') + '_t=' + Date.now();
-                link.download = fileName;
-                link.target = '_blank';
-                document.body.appendChild(link);
-                link.click();
-                document.body.removeChild(link);
-            });
+            // ★★★ 尝试下载，如果失败则尝试降级版本 ★★★
+            function tryDownload(downloadUrl) {
+                fetch(downloadUrl, {
+                    mode: 'cors',
+                    headers: { 'Origin': window.location.origin }
+                })
+                .then(function(response) {
+                    if (!response.ok) throw new Error('网络请求失败');
+                    return response.blob();
+                })
+                .then(function(blob) {
+                    if (resolution === 'mobile' || resolution === 'mobile_s') {
+                        return cropToMobile(blob, fileName, resolution);
+                    } else {
+                        return downloadBlob(blob, fileName);
+                    }
+                })
+                .catch(function(err) {
+                    console.warn('⚠️ 下载失败，尝试降级版本:', err.message);
+                    // 尝试降级到下一级
+                    var fallbackUrl = '';
+                    if (downloadUrl === urls.uhd && urls.hd) {
+                        fallbackUrl = urls.hd;
+                    } else if (downloadUrl === urls.hd && urls.fhd) {
+                        fallbackUrl = urls.fhd;
+                    }
+                    if (fallbackUrl) {
+                        tryDownload(fallbackUrl);
+                    } else {
+                        console.warn('❌ 所有版本下载失败');
+                        // 最后兜底
+                        var link = document.createElement('a');
+                        link.href = downloadUrl + (downloadUrl.indexOf('?') === -1 ? '?' : '&') + '_t=' + Date.now();
+                        link.download = fileName;
+                        link.target = '_blank';
+                        document.body.appendChild(link);
+                        link.click();
+                        document.body.removeChild(link);
+                    }
+                });
+            }
+            
+            tryDownload(downloadUrl);
         }
 
-        // ★★★ 手机竖屏裁剪函数 ★★★
+        // ★★★ 手机竖屏裁剪函数 (支持动态识别 1080x1920 和 768x1280) ★★★
         function cropToMobile(blob, fileName, resolution) {
             return new Promise(function(resolve, reject) {
                 var img = new Image();
