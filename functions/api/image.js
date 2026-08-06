@@ -17,7 +17,6 @@ export async function onRequest(context) {
     });
   }
 
-  // ★★★ 日期标准化：支持 20260731 或 2026-07-31 ★★★
   function normalizeDate(dateStr) {
     if (!dateStr) return '';
     const digits = dateStr.replace(/\D/g, '');
@@ -29,7 +28,6 @@ export async function onRequest(context) {
 
   try {
     const host = url.origin;
-    // ★★★ 读取 bing-wallpaper2 的 data.json ★★★
     const jsonUrl = `${host}/json/data.json`;
 
     const fetchResp = await fetch(new Request(jsonUrl, request));
@@ -53,7 +51,6 @@ export async function onRequest(context) {
       });
     }
 
-    // ★★★ 用 startdate 匹配 ★★★
     const normalizedInput = normalizeDate(date);
     const item = data.find(w => w.startdate === normalizedInput);
 
@@ -69,23 +66,49 @@ export async function onRequest(context) {
       });
     }
 
-    // ★★★ 构造图片 URL ★★★
+    // ★★★ 构造多个格式的图片 URL ★★★
     const baseUrl = 'https://www.bing.com';
-    const imageUrl = `${baseUrl}${item.urlbase}_UHD.jpg`;
+    const imageUrls = [
+      `${baseUrl}${item.urlbase}_UHD.jpg`,
+      `${baseUrl}${item.urlbase}_1920x1080.jpg`,
+      `${baseUrl}${item.urlbase}_1920x1200.jpg`,
+    ];
 
-    if (redirect) {
-      return Response.redirect(imageUrl, 302);
+    // ★★★ 降级加载函数 ★★★
+    async function fetchImageWithFallback(urls, redirect) {
+      for (const url of urls) {
+        try {
+          const resp = await fetch(url, {
+            headers: { 'User-Agent': 'CloudflarePages-Function' }
+          });
+          if (resp.ok) {
+            if (redirect) {
+              return Response.redirect(url, 302);
+            }
+            return new Response(resp.body, {
+              headers: {
+                'Content-Type': resp.headers.get('Content-Type') || 'image/jpeg',
+                'Cache-Control': 'public, max-age=10800',
+                'X-Image-Date': item.startdate,
+                'X-Image-Copyright': encodeURIComponent(item.copyright || '')
+              }
+            });
+          }
+        } catch (e) {
+          // 继续尝试下一个格式
+        }
+      }
+      // 所有格式都失败
+      return new Response(JSON.stringify({
+        error: '所有格式的图片都无法获取',
+        date: date
+      }), {
+        status: 404,
+        headers: { 'Content-Type': 'application/json' }
+      });
     }
 
-    const resp = await fetch(imageUrl);
-    return new Response(resp.body, {
-      headers: {
-        'Content-Type': resp.headers.get('Content-Type') || 'image/jpeg',
-        'Cache-Control': 'public, max-age=10800',
-        'X-Image-Date': item.startdate,
-        'X-Image-Copyright': encodeURIComponent(item.copyright || '')
-      }
-    });
+    return await fetchImageWithFallback(imageUrls, redirect);
 
   } catch (error) {
     return new Response(JSON.stringify({
