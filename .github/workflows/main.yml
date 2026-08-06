@@ -2,7 +2,7 @@ name: 'Update Images Data'
 
 on:
   schedule:
-    - cron: '0 7 * * *'   # UTC 7:00 = 北京时间 15:00
+    - cron: '0 20 * * *'   # UTC 20:00 = 北京时间 次日 04:00
   workflow_dispatch:
 
 permissions:
