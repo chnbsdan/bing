@@ -8,7 +8,6 @@ export async function onRequest(context) {
   let totalCount = '--';
   let todayDate = '--';
   try {
-    // ★★★ 修改：数据源改为 /json/data.json ★★★
     const dataUrl = `${base}/json/data.json`;
     const res = await fetch(dataUrl, {
       headers: {
@@ -20,9 +19,7 @@ export async function onRequest(context) {
       const data = await res.json();
       totalCount = data.length || 0;
       if (data.length > 0) {
-        // ★★★ data.json 使用 startdate 字段，按日期排序 ★★★
         data.sort((a, b) => b.startdate.localeCompare(a.startdate));
-        // ★★★ 取最新日期的 startdate ★★★
         todayDate = data[0].startdate || '--';
       }
     }
@@ -750,6 +747,7 @@ export async function onRequest(context) {
 
     <div class="api-grid">
 
+      <!-- ===== 现有 API ===== -->
       <div class="api-card">
         <div class="api-label"><i class="fas fa-sun"></i> 当天图像</div>
         <div class="api-path">/api/daily <span class="method">GET</span></div>
@@ -799,6 +797,50 @@ export async function onRequest(context) {
         </div>
         <div class="api-tags">
           <code>?page=1&size=30</code> 分页参数
+        </div>
+      </div>
+
+      <!-- ===== ★★★ 历史壁纸 API ★★★ ===== -->
+      <div class="api-card" style="grid-column: 1 / -1; margin-top: 8px; background: var(--accent-glow); border-color: var(--accent);">
+        <div class="api-label" style="color: var(--accent);"><i class="fas fa-clock"></i> 📜 历史壁纸（2010-2019）</div>
+      </div>
+
+      <div class="api-card">
+        <div class="api-label"><i class="fas fa-random"></i> 随机历史</div>
+        <div class="api-path">/api/history/random <span class="method">GET</span></div>
+        <div class="api-desc">从 2010-2019 年历史壁纸中随机返回一张</div>
+        <div class="api-code">
+          <span class="link-part"><a href="${base}/api/history/random" target="_blank">${base}/api/history/random</a></span>
+          <button class="copy-btn" onclick="copyText('${base}/api/history/random')"><i class="fas fa-copy"></i></button>
+        </div>
+        <div class="api-tags">
+          <code>?redirect=true</code> 重定向到图片
+        </div>
+      </div>
+
+      <div class="api-card">
+        <div class="api-label"><i class="fas fa-calendar-alt"></i> 指定历史日期</div>
+        <div class="api-path">/api/history/image <span class="method">GET</span></div>
+        <div class="api-desc">获取指定日期的历史壁纸（2010-2019）</div>
+        <div class="api-code">
+          <span class="link-part"><a href="${base}/api/history/image?date=2010-01-01" target="_blank">${base}/api/history/image?date=2010-01-01</a></span>
+          <button class="copy-btn" onclick="copyText('${base}/api/history/image?date=2010-01-01')"><i class="fas fa-copy"></i></button>
+        </div>
+        <div class="api-tags">
+          <code>?date=2010-01-01</code> 格式：YYYY-MM-DD
+        </div>
+      </div>
+
+      <div class="api-card">
+        <div class="api-label"><i class="fas fa-history"></i> 历史上的今天</div>
+        <div class="api-path">/api/history/daily <span class="method">GET</span></div>
+        <div class="api-desc">返回历史上今天的壁纸</div>
+        <div class="api-code">
+          <span class="link-part"><a href="${base}/api/history/daily" target="_blank">${base}/api/history/daily</a></span>
+          <button class="copy-btn" onclick="copyText('${base}/api/history/daily')"><i class="fas fa-copy"></i></button>
+        </div>
+        <div class="api-tags">
+          <code>?redirect=true</code> 重定向到图片
         </div>
       </div>
 
