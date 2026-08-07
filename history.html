@@ -1032,7 +1032,7 @@ html, body {
         var allData = [];
         var filteredData = [];
         var currentPage = 1;
-        var PAGE_SIZE = 30;
+        var PAGE_SIZE = 20;
         var totalPages = 1;
         var isLoading = false;
         var hasMore = true;
@@ -1072,68 +1072,71 @@ html, body {
         var toolbarVisible = true;
 
         // ============================================================
-// 6.1 加载数据 - ★★★ 从 /json/history-2010-2019.json 读取 ★★★
-// ============================================================
-async function loadData() {
-    showProgress();
-    try {
-        // ★★★ 添加时间戳绕过缓存 ★★★
-        var url = '/json/history-2010-2019.json?t=' + Date.now();
-        var res = await fetch(url, {
-            headers: {
-                'Cache-Control': 'no-cache, no-store, must-revalidate',
-                'Pragma': 'no-cache',
-                'Expires': '0'
+        // 6.1 加载数据 - ★★★ 从 /json/history-2010-2019.json 读取 ★★★
+        // ============================================================
+        async function loadData() {
+            showProgress();
+            try {
+                // ★★★ 添加时间戳绕过缓存 ★★★
+                var url = '/json/history-2010-2019.json?t=' + Date.now();
+                var res = await fetch(url, {
+                    headers: {
+                        'Cache-Control': 'no-cache, no-store, must-revalidate',
+                        'Pragma': 'no-cache',
+                        'Expires': '0'
+                    }
+                });
+                if (!res.ok) throw new Error('HTTP ' + res.status);
+                var rawData = await res.json();
+                
+                console.log('原始数据条数:', rawData.length);
+                
+                if (!Array.isArray(rawData) || rawData.length === 0) {
+                    showEmpty();
+                    hideProgress();
+                    return;
+                }
+
+                // ★★★ 转换数据格式 - 使用自托管缩略图 ★★★
+                allData = rawData.map(function(item) {
+                    var dateStr = item.date || '';
+                    var formattedDate = dateStr.replace(/-/g, '');
+                    var displayDate = formattedDate.slice(0,4) + '-' + formattedDate.slice(4,6) + '-' + formattedDate.slice(6,8);
+                    var year = dateStr.split('-')[0];
+                    
+                    var imageUrl = item.url || '';
+                    // ★★★ 使用自托管的缩略图 ★★★
+                    var thumbUrl = `https://bing.hangdn.net/thumbs/${year}/${dateStr}.jpg`;
+                    var fallbackUrl = imageUrl; // 降级用原图
+                    
+                    return {
+                        date: displayDate,
+                        copyright: item.copyright || '',
+                        title: item.title || '',
+                        jpg: imageUrl,
+                        webp: imageUrl,
+                        thumb: thumbUrl,
+                        fallback: fallbackUrl  // ★★★ 保留原图作为降级备用 ★★★
+                    };
+                });
+
+                console.log('转换后数据条数:', allData.length);
+
+                allData.sort(function(a, b) { return b.date.localeCompare(a.date); });
+                filteredData = [];
+                totalNavCount.textContent = allData.length;
+                totalPages = Math.ceil(allData.length / PAGE_SIZE);
+                currentPage = 1;
+                hasMore = true;
+                grid.innerHTML = '';
+                renderPage(1);
+                hideProgress();
+            } catch (err) {
+                console.error('加载失败:', err);
+                showEmpty();
+                hideProgress();
             }
-        });
-        if (!res.ok) throw new Error('HTTP ' + res.status);
-        var rawData = await res.json();
-        
-        console.log('原始数据条数:', rawData.length);
-        
-        if (!Array.isArray(rawData) || rawData.length === 0) {
-            showEmpty();
-            hideProgress();
-            return;
         }
-
-        // ★★★ 转换数据格式 ★★★
-        allData = rawData.map(function(item) {
-            var dateStr = item.date || '';
-            var formattedDate = dateStr.replace(/-/g, '');
-            var displayDate = formattedDate.slice(0,4) + '-' + formattedDate.slice(4,6) + '-' + formattedDate.slice(6,8);
-            
-            var imageUrl = item.url || '';
-            // ★★★ 直接使用原图，让浏览器压缩显示（不经过 weserv） ★★★
-            var thumbUrl = imageUrl;
-            
-            return {
-                date: displayDate,
-                copyright: item.copyright || '',
-                title: item.title || '',
-                jpg: imageUrl,
-                webp: imageUrl,
-                thumb: thumbUrl
-            };
-        });
-
-        console.log('转换后数据条数:', allData.length);
-
-        allData.sort(function(a, b) { return b.date.localeCompare(a.date); });
-        filteredData = [];
-        totalNavCount.textContent = allData.length;
-        totalPages = Math.ceil(allData.length / PAGE_SIZE);
-        currentPage = 1;
-        hasMore = true;
-        grid.innerHTML = '';
-        renderPage(1);
-        hideProgress();
-    } catch (err) {
-        console.error('加载失败:', err);
-        showEmpty();
-        hideProgress();
-    }
-}
 
         // ============================================================
         // 6.2 渲染页面
@@ -1190,9 +1193,10 @@ async function loadData() {
                 
                 // ★★★ 历史图片降级 ★★★
                 img.addEventListener('error', function() {
-                    if (this.src === item.thumb && item.jpg) {
-                        this.src = item.jpg;
-                        console.log('🔄 历史缩略图降级:', item.date);
+                    // ★★★ 如果缩略图加载失败，降级到原图 ★★★
+                    if (this.src === item.thumb && item.fallback) {
+                        this.src = item.fallback;
+                        console.log('🔄 缩略图降级到原图:', item.date);
                         return;
                     }
                     this.classList.add('loaded');
