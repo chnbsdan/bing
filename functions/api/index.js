@@ -104,7 +104,7 @@ export async function onRequest(context) {
 
     /* ===== 亮色模式 - 淡橙色系 ===== */
     [data-theme="light"] {
-      --bg-primary: #faf0e6;
+      --bg-primary: #ffffff;
       --bg-secondary: #ffffff;
       --bg-card: rgba(255,248,240,0.7);
       --bg-card-hover: rgba(255,248,240,0.95);
@@ -870,7 +870,7 @@ export async function onRequest(context) {
           <button class="copy-btn" onclick="copyText('${base}/api/history/image?date=2010-01-01')"><i class="fas fa-copy"></i></button>
         </div>
         <div class="api-tags">
-          <code>?date=2010-01-01</code> 格式：YYYY-MM-DD · <code>?redirect=true</code> 直接显示图片
+          <code>?date=2010-01-01</code> 格式：YYYY-MM-DD · <code>&redirect=true</code> 直接显示图片
         </div>
       </div>
 
