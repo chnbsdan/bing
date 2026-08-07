@@ -4,24 +4,67 @@ export async function onRequest(context) {
   const url = new URL(request.url);
   const base = `${url.protocol}//${url.host}`;
 
-  // ★★★ 获取壁纸数据 - 从 /json/data.json 读取 ★★★
+  // ★★★ 获取壁纸数据 - 合并 data.json 和 history-2010-2019.json ★★★
   let totalCount = '--';
   let todayDate = '--';
   try {
+    // 1. 获取最新壁纸数据
     const dataUrl = `${base}/json/data.json`;
-    const res = await fetch(dataUrl, {
+    const dataRes = await fetch(dataUrl, {
       headers: {
         'Accept': 'application/json',
         'User-Agent': 'CloudflarePages-Function'
       }
     });
-    if (res.ok) {
-      const data = await res.json();
-      totalCount = data.length || 0;
-      if (data.length > 0) {
-        data.sort((a, b) => b.startdate.localeCompare(a.startdate));
-        todayDate = data[0].startdate || '--';
+    
+    // 2. 获取历史壁纸数据
+    const historyUrl = `${base}/json/history-2010-2019.json`;
+    const historyRes = await fetch(historyUrl, {
+      headers: {
+        'Accept': 'application/json',
+        'User-Agent': 'CloudflarePages-Function'
       }
+    });
+    
+    // 3. 合并去重
+    let allData = [];
+    const dateSet = new Set();
+    
+    if (dataRes.ok) {
+      const data = await dataRes.json();
+      if (Array.isArray(data)) {
+        data.forEach(item => {
+          const key = item.startdate || item.date;
+          if (key && !dateSet.has(key)) {
+            dateSet.add(key);
+            allData.push(item);
+          }
+        });
+      }
+    }
+    
+    if (historyRes.ok) {
+      const historyData = await historyRes.json();
+      if (Array.isArray(historyData)) {
+        historyData.forEach(item => {
+          const key = item.startdate || item.date;
+          if (key && !dateSet.has(key)) {
+            dateSet.add(key);
+            allData.push(item);
+          }
+        });
+      }
+    }
+    
+    if (allData.length > 0) {
+      totalCount = allData.length;
+      // 按日期排序（支持 startdate 和 date 字段）
+      allData.sort((a, b) => {
+        const dateA = a.startdate || a.date || '';
+        const dateB = b.startdate || b.date || '';
+        return dateB.localeCompare(dateA);
+      });
+      todayDate = allData[0].startdate || allData[0].date || '--';
     }
   } catch (e) {
     console.error('Fetch error:', e.message);
@@ -770,7 +813,7 @@ export async function onRequest(context) {
           <button class="copy-btn" onclick="copyText('${base}/api/random')"><i class="fas fa-copy"></i></button>
         </div>
         <div class="api-tags">
-          <code>?redirect=true</code> 重定向到图片
+          <code>?redirect=true</code> 直接显示图片
         </div>
       </div>
 
@@ -783,7 +826,7 @@ export async function onRequest(context) {
           <button class="copy-btn" onclick="copyText('${base}/api/image?date=20210312')"><i class="fas fa-copy"></i></button>
         </div>
         <div class="api-tags">
-          <code>?date=20210312</code> 格式：YYYYMMDD
+          <code>?date=20210312</code> 格式：YYYYMMDD · <code>?redirect=true</code> 直接显示图片
         </div>
       </div>
 
@@ -814,7 +857,7 @@ export async function onRequest(context) {
           <button class="copy-btn" onclick="copyText('${base}/api/history/random')"><i class="fas fa-copy"></i></button>
         </div>
         <div class="api-tags">
-          <code>?redirect=true</code> 重定向到图片
+          <code>?redirect=true</code> 直接显示图片
         </div>
       </div>
 
@@ -827,7 +870,7 @@ export async function onRequest(context) {
           <button class="copy-btn" onclick="copyText('${base}/api/history/image?date=2010-01-01')"><i class="fas fa-copy"></i></button>
         </div>
         <div class="api-tags">
-          <code>?date=2010-01-01</code> 格式：YYYY-MM-DD
+          <code>?date=2010-01-01</code> 格式：YYYY-MM-DD · <code>?redirect=true</code> 直接显示图片
         </div>
       </div>
 
@@ -840,7 +883,7 @@ export async function onRequest(context) {
           <button class="copy-btn" onclick="copyText('${base}/api/history/daily')"><i class="fas fa-copy"></i></button>
         </div>
         <div class="api-tags">
-          <code>?redirect=true</code> 重定向到图片
+          <code>?redirect=true</code> 直接显示图片
         </div>
       </div>
 
