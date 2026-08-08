@@ -359,6 +359,58 @@ html, body {
     100% { transform: rotate(360deg); }
 }
 
+/* ★★★ 页尾 - 已全部加载 ★★★ */
+.footer-end {
+    flex: 0 0 100%;
+    text-align: center;
+    padding: 30px 20px 40px;
+    color: var(--text-faint);
+    font-size: 13px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 10px;
+    opacity: 0;
+    animation: fadeInUp 0.6s ease forwards;
+}
+.footer-end .footer-line {
+    width: 60px;
+    height: 1px;
+    background: var(--text-faint);
+    border: none;
+    margin: 0 auto;
+}
+.footer-end .footer-icon {
+    font-size: 24px;
+    color: var(--text-faint);
+    opacity: 0.5;
+}
+.footer-end .footer-text {
+    color: var(--text-muted);
+    font-size: 13px;
+    letter-spacing: 0.5px;
+}
+.footer-end .footer-text span {
+    color: var(--accent-color);
+    opacity: 0.6;
+}
+.footer-end .footer-sub {
+    color: var(--text-faint);
+    font-size: 11px;
+    margin-top: 2px;
+}
+
+@keyframes fadeInUp {
+    from {
+        opacity: 0;
+        transform: translateY(16px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
 .no-more {
     flex: 0 0 100%;
     text-align: center;
@@ -1266,7 +1318,7 @@ html, body {
         }
 
         // ============================================================
-        // 6.2 渲染页面 - ★★★ 小卡片使用 _400x240.jpg，降级到 _1920x1080.jpg ★★★
+        // 6.2 ★★★ 渲染页面 - 带页尾提示 ★★★
         // ============================================================
         function renderPage(page) {
             var data = filteredData.length > 0 ? filteredData : allData;
@@ -1274,7 +1326,7 @@ html, body {
             if (page < 1) page = 1;
             if (page > totalPages) {
                 hasMore = false;
-                showNoMore();
+                showFooterEnd();
                 return;
             }
             currentPage = page;
@@ -1284,12 +1336,15 @@ html, body {
             
             if (items.length === 0) {
                 hasMore = false;
-                showNoMore();
+                showFooterEnd();
                 return;
             }
 
+            // 移除之前的加载指示器和页尾
             var loadingEl = document.querySelector('.loading-indicator');
             if (loadingEl) loadingEl.remove();
+            var footerEl = document.querySelector('.footer-end');
+            if (footerEl) footerEl.remove();
 
             items.forEach(function(item) {
                 var card = document.createElement('div');
@@ -1346,6 +1401,7 @@ html, body {
                 grid.appendChild(card);
             });
 
+            // ★★★ 如果还有下一页，显示加载更多；否则显示页尾 ★★★
             if (page < totalPages) {
                 var loadingDiv = document.createElement('div');
                 loadingDiv.className = 'loading-indicator';
@@ -1354,10 +1410,29 @@ html, body {
                 grid.appendChild(loadingDiv);
             } else {
                 hasMore = false;
-                showNoMore();
+                showFooterEnd();
             }
             
             isLoading = false;
+        }
+
+        // ★★★ 显示页尾 ★★★
+        function showFooterEnd() {
+            // 移除旧的页尾和加载指示器
+            var oldFooter = document.querySelector('.footer-end');
+            if (oldFooter) oldFooter.remove();
+            var loadingEl = document.querySelector('.loading-indicator');
+            if (loadingEl) loadingEl.remove();
+            
+            var footer = document.createElement('div');
+            footer.className = 'footer-end';
+            footer.innerHTML = `
+                <div class="footer-line"></div>
+                <div class="footer-icon"><i class="fas fa-check-circle"></i></div>
+                <div class="footer-text">已全部加载完成 <span>·</span> 共 <span id="footerTotalCount">${allData.length}</span> 张壁纸</div>
+                <div class="footer-sub">— 感谢使用 Bing Wallpaper —</div>
+            `;
+            grid.appendChild(footer);
         }
 
         // ============================================================
@@ -1370,7 +1445,7 @@ html, body {
             var total = Math.ceil(data.length / PAGE_SIZE);
             if (currentPage >= total) {
                 hasMore = false;
-                showNoMore();
+                showFooterEnd();
                 return;
             }
             
@@ -1427,15 +1502,6 @@ html, body {
         function showEmpty() {
             grid.innerHTML =
                 '<div class="empty"><div class="icon"><i class="fas fa-image"></i></div><div>暂无壁纸数据</div></div>';
-        }
-
-        function showNoMore() {
-            var loadingEl = document.getElementById('loadingIndicator');
-            if (loadingEl) {
-                loadingEl.innerHTML = '— 已全部加载 —';
-                loadingEl.className = 'no-more';
-                loadingEl.id = '';
-            }
         }
 
         // ============================================================
@@ -1911,6 +1977,7 @@ html, body {
         console.log('💡 评论系统: Twikoo');
         console.log('📜 滚动加载模式已启用');
         console.log('🔍 搜索框支持清除按钮');
+        console.log('📌 滚动到末尾显示页尾提示');
 
         window.openComment = openComment;
 
