@@ -1742,9 +1742,9 @@ html, body {
 
         closePreviewBtn.addEventListener('click', closePreview);
 
-       // ============================================================
-// 7.1 下载 - ★★★ 使用原始文件名 ★★★
-// ============================================================
+         // ============================================================
+         // 7.1 下载 - ★★★ 从 urlbase 提取原始文件名 ★★★
+        // ============================================================
 
 downloadMenu.querySelectorAll('a').forEach(function(item) {
     item.addEventListener('click', function(e) {
@@ -1754,20 +1754,25 @@ downloadMenu.querySelectorAll('a').forEach(function(item) {
     });
 });
 
-// ★★★ 从 Bing URL 提取原始文件名 ★★★
-function getBingFileName(bingUrl) {
-    if (!bingUrl) return null;
-    var match = bingUrl.match(/[^/]+\.(jpg|jpeg|png|webp)/i);
-    if (match) {
-        return match[0];
-    }
-    return null;
-}
-
-// ★★★ 生成下载文件名 ★★★
+// ★★★ 从 urlbase 提取原始文件名 ★★★
 function getDownloadFileName(item, resolution) {
-    var bingFileName = getBingFileName(item.bing_url);
-    if (bingFileName) {
+    // urlbase 格式: /th?id=OHR.StocktonInfinity_ZH-CN5941379745
+    var urlbase = item.urlbase || '';
+    var rawName = '';
+    
+    if (urlbase) {
+        // 提取 OHR.xxx_xxx 部分
+        var match = urlbase.match(/[^/]+$/);
+        if (match) {
+            rawName = match[0];
+            // 去掉开头的 th?id= (如果有)
+            if (rawName.startsWith('th?id=')) {
+                rawName = rawName.replace('th?id=', '');
+            }
+        }
+    }
+    
+    if (rawName) {
         var resMap = {
             '4k': 'UHD',
             'fhd': '1920x1080',
@@ -1776,10 +1781,12 @@ function getDownloadFileName(item, resolution) {
             'mobile_s': '768x1280'
         };
         var resSuffix = resMap[resolution] || 'UHD';
-        var nameWithoutExt = bingFileName.replace(/\.(jpg|jpeg|png|webp)$/i, '');
-        var cleanName = nameWithoutExt.replace(/_(UHD|1920x1080|1080x1920|1366x768|768x1280|400x240)$/i, '');
+        // 移除已有的分辨率后缀
+        var cleanName = rawName.replace(/_(UHD|1920x1080|1080x1920|1366x768|768x1280|400x240)$/i, '');
         return cleanName + '_' + resSuffix + '.jpg';
     }
+    
+    // 降级：使用日期
     return 'wallpaper_' + (item.date || Date.now()) + '_' + resolution + '.jpg';
 }
 
@@ -1789,7 +1796,6 @@ function downloadImage(index, resolution) {
     var item = allData[index];
     if (!item) return;
     
-    // ★★★ 使用原始文件名 ★★★
     var fileName = getDownloadFileName(item, resolution);
     console.log('📥 下载文件名:', fileName);
     
@@ -1825,7 +1831,7 @@ function downloadImage(index, resolution) {
     tryDownload(downloadUrl);
 }
 
-// ★★★ 手机竖屏裁剪函数 ★★★
+// ★★★ 手机竖屏裁剪函数 - 从中心裁剪 ★★★
 function cropToMobile(blob, fileName, resolution) {
     return new Promise(function(resolve, reject) {
         var img = new Image();
@@ -1850,6 +1856,7 @@ function cropToMobile(blob, fileName, resolution) {
             var targetRatio = targetW / targetH;
             var cropW, cropH, cropX, cropY;
             
+            // ★★★ 从中心裁剪 ★★★
             if (imgW / imgH > targetRatio) {
                 cropH = imgH;
                 cropW = imgH * targetRatio;
