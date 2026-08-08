@@ -1743,7 +1743,7 @@ html, body {
         closePreviewBtn.addEventListener('click', closePreview);
 
        // ============================================================
-// 7.1 下载 - ★★★ 修复手机裁剪 ★★★
+// 7.1 下载 - ★★★ 手机裁剪：使用 Canvas 真正裁剪 ★★★
 // ============================================================
 
 downloadMenu.querySelectorAll('a').forEach(function(item) {
@@ -1761,40 +1761,19 @@ function downloadImage(index, resolution) {
     if (!item) return;
     
     var urls = item.urls;
-    var url = urls.uhd || urls.fhd || '';
     
-    // ★★★ 分辨率配置 ★★★
-    var resolutions = {
-        '4k': { w: 0, h: 0 },
-        'fhd': { w: 1920, h: 1080 },
-        'hd': { w: 1366, h: 768 },
-        'mobile': { w: 1080, h: 1920 },
-        'mobile_s': { w: 768, h: 1280 }
-    };
-    var res = resolutions[resolution] || resolutions['fhd'];
-    var downloadUrl = url;
+    // ★★★ 手机分辨率：总是下载原图然后裁剪 ★★★
+    var isMobileRes = (resolution === 'mobile' || resolution === 'mobile_s');
     
-    // 准备图片下载地址
-    if (resolution === '4k') {
-        downloadUrl = urls.uhd || urls.fhd || '';
-    } else if (resolution === 'mobile' || resolution === 'mobile_s') {
-        if (url.indexOf('th?id=') !== -1) {
-            var baseUrl = url.split('&')[0];
-            downloadUrl = baseUrl + '&w=' + res.w + '&h=' + res.h;
-        }
-    } else {
-        if (url.indexOf('th?id=') !== -1) {
-            var baseUrl = url.split('&')[0];
-            downloadUrl = baseUrl + '&w=' + res.w + '&h=' + res.h;
-        }
-    }
+    // 手机分辨率使用 UHD 原图裁剪，其他使用对应分辨率
+    var downloadUrl = isMobileRes ? (urls.uhd || urls.fhd || '') : (urls.uhd || urls.fhd || '');
     
     var fileName = 'wallpaper_' + (item.date || '') + '_' + resolution + '.jpg';
     
-    console.log('📥 开始下载: ' + fileName);
+    console.log('📥 开始下载: ' + fileName + (isMobileRes ? ' (裁剪为手机壁纸)' : ''));
     
-    function tryDownload(downloadUrl) {
-        fetch(downloadUrl, {
+    function tryDownload(url) {
+        fetch(url, {
             mode: 'cors',
             headers: { 'Origin': window.location.origin }
         })
@@ -1803,40 +1782,30 @@ function downloadImage(index, resolution) {
             return response.blob();
         })
         .then(function(blob) {
-            // ★★★ 手机分辨率进行裁剪 ★★★
-            if (resolution === 'mobile' || resolution === 'mobile_s') {
+            // ★★★ 手机分辨率：用 Canvas 从中心裁剪 ★★★
+            if (isMobileRes) {
                 return cropToMobile(blob, fileName, resolution);
             } else {
                 return downloadBlob(blob, fileName);
             }
         })
         .catch(function(err) {
-            console.warn('⚠️ 下载失败，尝试降级版本:', err.message);
-            var fallbackUrl = '';
-            if (downloadUrl === urls.uhd && urls.fhd) {
-                fallbackUrl = urls.fhd;
-            } else if (downloadUrl === urls.fhd && urls.hd) {
-                fallbackUrl = urls.hd;
-            }
-            if (fallbackUrl) {
-                tryDownload(fallbackUrl);
-            } else {
-                console.warn('❌ 所有版本下载失败');
-                var link = document.createElement('a');
-                link.href = downloadUrl + (downloadUrl.indexOf('?') === -1 ? '?' : '&') + '_t=' + Date.now();
-                link.download = fileName;
-                link.target = '_blank';
-                document.body.appendChild(link);
-                link.click();
-                document.body.removeChild(link);
-            }
+            console.warn('⚠️ 下载失败，尝试降级:', err.message);
+            // 降级：直接打开图片
+            var link = document.createElement('a');
+            link.href = url;
+            link.download = fileName;
+            link.target = '_blank';
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
         });
     }
     
     tryDownload(downloadUrl);
 }
 
-// ★★★ 手机竖屏裁剪函数 - 从中心裁剪 9:16 ★★★
+// ★★★ 手机竖屏裁剪函数 - 使用 Canvas 从中心裁剪 ★★★
 function cropToMobile(blob, fileName, resolution) {
     return new Promise(function(resolve, reject) {
         var img = new Image();
@@ -1846,6 +1815,7 @@ function cropToMobile(blob, fileName, resolution) {
             var canvas = document.createElement('canvas');
             var ctx = canvas.getContext('2d');
             
+            // 目标尺寸
             var targetW = 1080;
             var targetH = 1920;
             if (resolution === 'mobile_s') {
@@ -1864,20 +1834,26 @@ function cropToMobile(blob, fileName, resolution) {
             var cropW, cropH, cropX, cropY;
             
             if (imgW / imgH > targetRatio) {
-                // 图片太宽，裁剪左右两侧，保留中心
+                // 图片太宽 → 裁剪左右两侧，保留中心
                 cropH = imgH;
                 cropW = imgH * targetRatio;
                 cropX = (imgW - cropW) / 2;
                 cropY = 0;
             } else {
-                // 图片太高，裁剪上下两侧，保留中心
+                // 图片太高 → 裁剪上下两侧，保留中心
                 cropW = imgW;
                 cropH = imgW / targetRatio;
                 cropX = 0;
                 cropY = (imgH - cropH) / 2;
             }
             
-            // 绘制裁剪后的图片到 canvas
+            console.log('📐 裁剪参数:', {
+                原图: imgW + 'x' + imgH,
+                裁剪区域: Math.round(cropW) + 'x' + Math.round(cropH),
+                偏移: Math.round(cropX) + ', ' + Math.round(cropY)
+            });
+            
+            // ★★★ 绘制裁剪后的图片 ★★★
             ctx.drawImage(img, cropX, cropY, cropW, cropH, 0, 0, targetW, targetH);
             
             canvas.toBlob(function(croppedBlob) {
@@ -1901,37 +1877,19 @@ function cropToMobile(blob, fileName, resolution) {
     });
 }
 
-// ★★★ 通用的 Blob 下载函数 ★★★
+// ★★★ 下载 Blob ★★★
 function downloadBlob(blob, fileName) {
-    // 检测是否为移动端
-    var isMobile = /Android|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
-    
-    if (isMobile) {
-        // 移动端：使用 a 标签直接下载
-        var url = URL.createObjectURL(blob);
-        var link = document.createElement('a');
-        link.href = url;
-        link.download = fileName;
-        document.body.appendChild(link);
-        link.click();
-        document.body.removeChild(link);
-        setTimeout(function() {
-            URL.revokeObjectURL(url);
-        }, 1000);
-        console.log('✅ 移动端下载成功: ' + fileName);
-    } else {
-        // PC 端：使用 a 标签下载
-        var link = document.createElement('a');
-        link.href = URL.createObjectURL(blob);
-        link.download = fileName;
-        document.body.appendChild(link);
-        link.click();
-        document.body.removeChild(link);
-        setTimeout(function() {
-            URL.revokeObjectURL(link.href);
-        }, 1000);
-        console.log('✅ 下载成功: ' + fileName);
-    }
+    var url = URL.createObjectURL(blob);
+    var link = document.createElement('a');
+    link.href = url;
+    link.download = fileName;
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    setTimeout(function() {
+        URL.revokeObjectURL(url);
+    }, 2000);
+    console.log('✅ 下载成功: ' + fileName);
 }
 
         // ============================================================
