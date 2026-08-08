@@ -97,12 +97,70 @@ html, body {
 /* ===== 进度条 ===== */
 #progress-bar { position: fixed; top: 0; left: 0; height: 2.5px; background: var(--progress-bar); width: 0%; z-index: 9999; transition: width 0.3s ease; box-shadow: 0 0 12px rgba(79,195,247,0.4); }
 
-/* ===== 导航栏 ===== */
-.nav-toggle { position: fixed; top: 12px; left: 12px; z-index: 1001; background: var(--nav-bg); backdrop-filter: blur(8px); border: 1px solid var(--border-color); border-radius: 8px; color: var(--text-primary); font-size: 20px; padding: 6px 12px; cursor: pointer; transition: 0.2s; line-height: 1; -webkit-tap-highlight-color: transparent; }
-.nav-toggle:hover { background: var(--accent-hover); border-color: rgba(79,195,247,0.2); }
+/* ===== ★★★ 导航栏 - 悬停显示 ★★★ ===== */
+.nav-toggle { 
+    position: fixed; 
+    top: 12px; 
+    left: 12px; 
+    z-index: 1001; 
+    background: var(--nav-bg); 
+    backdrop-filter: blur(8px); 
+    border: 1px solid var(--border-color); 
+    border-radius: 8px; 
+    color: var(--text-primary); 
+    font-size: 20px; 
+    padding: 6px 12px; 
+    cursor: pointer; 
+    transition: 0.2s; 
+    line-height: 1; 
+    -webkit-tap-highlight-color: transparent; 
+}
+.nav-toggle:hover { 
+    background: var(--accent-hover); 
+    border-color: rgba(79,195,247,0.3); 
+}
 .nav-toggle.hidden { display: none !important; }
-.navbar { position: fixed; top: 12px; left: 56px; z-index: 1000; background: var(--nav-bg); backdrop-filter: blur(16px); border: 1px solid var(--border-color); border-radius: 12px; padding: 14px 16px; display: flex; flex-direction: column; gap: 10px; min-width: 200px; opacity: 0; transform: translateY(-10px) scale(0.95); transition: opacity 0.25s ease, transform 0.25s ease; pointer-events: none; box-shadow: 0 8px 32px var(--shadow-color); max-width: 90vw; }
-.navbar.open { opacity: 1; transform: translateY(0) scale(1); pointer-events: auto; }
+
+/* ★★★ 导航栏 - 悬停触发 ★★★ */
+.navbar { 
+    position: fixed; 
+    top: 12px; 
+    left: 56px; 
+    z-index: 1000; 
+    background: var(--nav-bg); 
+    backdrop-filter: blur(16px); 
+    border: 1px solid var(--border-color); 
+    border-radius: 12px; 
+    padding: 14px 16px; 
+    display: flex; 
+    flex-direction: column; 
+    gap: 10px; 
+    min-width: 200px; 
+    opacity: 0; 
+    transform: translateY(-10px) scale(0.95); 
+    transition: opacity 0.25s ease, transform 0.25s ease, visibility 0.25s ease; 
+    pointer-events: none; 
+    visibility: hidden;
+    box-shadow: 0 8px 32px var(--shadow-color); 
+    max-width: 90vw; 
+}
+/* ★★★ 悬停或点击时显示 ★★★ */
+.navbar.open, 
+.nav-toggle:hover + .navbar,
+.navbar:hover {
+    opacity: 1; 
+    transform: translateY(0) scale(1); 
+    pointer-events: auto;
+    visibility: visible;
+}
+/* ★★★ 点击汉堡菜单时切换 ★★★ */
+.navbar.toggle-open {
+    opacity: 1; 
+    transform: translateY(0) scale(1); 
+    pointer-events: auto;
+    visibility: visible;
+}
+
 .navbar-header { display: flex; justify-content: space-between; align-items: center; width: 100%; }
 .navbar .logo { color: var(--text-primary); font-size: 17px; font-weight: 300; display: flex; align-items: center; gap: 8px; }
 .navbar .logo span { color: var(--accent-color); font-weight: 600; }
@@ -806,7 +864,7 @@ html, body {
     <!-- ===== 进度条 ===== -->
     <div id="progress-bar"></div>
 
-    <!-- ===== 导航栏 ===== -->
+    <!-- ===== ★★★ 导航栏 - 悬停显示 ★★★ ===== -->
     <button class="nav-toggle" id="navToggle" aria-label="切换导航"><i class="fas fa-bars"></i></button>
     <div class="navbar" id="navbar">
         <div class="navbar-header"><div class="logo"><img src="/favicon.ico" alt="Logo" style="width:24px;height:24px;border-radius:4px;" /> Bing <span>Wallpaper</span></div></div>
@@ -900,7 +958,7 @@ html, body {
     <!-- Twikoo CDN -->
     <script src="https://cdn.jsdelivr.net/npm/twikoo@1.6.41/dist/twikoo.min.js"></script>
     <script>
-               // ============================================================
+        // ============================================================
         // 1. 路径适配
         // ============================================================
         function getBasePath() {
@@ -952,7 +1010,7 @@ html, body {
         }
 
         // ============================================================
-        // 4. 导航栏
+        // 4. ★★★ 导航栏 - 悬停 + 点击切换 ★★★
         // ============================================================
         var navToggle = document.getElementById('navToggle');
         var navbar = document.getElementById('navbar');
@@ -960,7 +1018,7 @@ html, body {
 
         function toggleNav(open) {
             navOpen = open !== undefined ? open : !navOpen;
-            navbar.classList.toggle('open', navOpen);
+            navbar.classList.toggle('toggle-open', navOpen);
             navToggle.innerHTML = navOpen ? '<i class="fas fa-times"></i>' : '<i class="fas fa-bars"></i>';
         }
 
@@ -968,6 +1026,14 @@ html, body {
             e.stopPropagation();
             toggleNav();
         });
+
+        // ★★★ 鼠标移出导航栏时，如果是悬停打开的则关闭 ★★★
+        navbar.addEventListener('mouseleave', function() {
+            if (!navOpen) {
+                navbar.classList.remove('toggle-open');
+            }
+        });
+
         document.addEventListener('click', function(e) {
             if (navOpen && !navbar.contains(e.target) && e.target !== navToggle) {
                 toggleNav(false);
@@ -984,7 +1050,7 @@ html, body {
         function openComment() {
             commentOverlay.classList.add('active');
             document.body.style.overflow = 'hidden';
-            toggleNav(false);
+            if (navOpen) toggleNav(false);
             if (!document.getElementById('tcomment').hasChildNodes()) {
                 initTwikoo();
             }
@@ -1077,7 +1143,6 @@ html, body {
         async function loadData() {
             showProgress();
             try {
-                // ★★★ 添加时间戳绕过缓存 ★★★
                 var url = '/json/history-2010-2019.json?t=' + Date.now();
                 var res = await fetch(url, {
                     headers: {
@@ -1105,9 +1170,8 @@ html, body {
                     var year = dateStr.split('-')[0];
                     
                     var imageUrl = item.url || '';
-                    // ★★★ 使用自托管的缩略图 ★★★
                     var thumbUrl = `https://bing.hangdn.net/thumbs/${year}/${dateStr}.jpg`;
-                    var fallbackUrl = imageUrl; // 降级用原图
+                    var fallbackUrl = imageUrl;
                     
                     return {
                         date: displayDate,
@@ -1116,7 +1180,7 @@ html, body {
                         jpg: imageUrl,
                         webp: imageUrl,
                         thumb: thumbUrl,
-                        fallback: fallbackUrl  // ★★★ 保留原图作为降级备用 ★★★
+                        fallback: fallbackUrl
                     };
                 });
 
@@ -1193,7 +1257,6 @@ html, body {
                 
                 // ★★★ 历史图片降级 ★★★
                 img.addEventListener('error', function() {
-                    // ★★★ 如果缩略图加载失败，降级到原图 ★★★
                     if (this.src === item.thumb && item.fallback) {
                         this.src = item.fallback;
                         console.log('🔄 缩略图降级到原图:', item.date);
@@ -1499,7 +1562,7 @@ html, body {
         closePreviewBtn.addEventListener('click', closePreview);
 
         // ============================================================
-        // 7.1 下载
+        // 7.1 ★★★ 下载 - 支持手机裁剪（从中心裁剪 9:16）★★★
         // ============================================================
 
         downloadMenu.querySelectorAll('a').forEach(function(item) {
@@ -1516,59 +1579,45 @@ html, body {
             if (!item) return;
             
             var url = item.jpg || item.webp || '';
-            var resolutions = {
-                '4k': { w: 0, h: 0 },
-                'fhd': { w: 1920, h: 1080 },
-                'hd': { w: 1366, h: 768 },
-                'mobile': { w: 1080, h: 1920 },
-                'mobile_s': { w: 768, h: 1280 }
-            };
-            var res = resolutions[resolution] || resolutions['fhd'];
+            var isMobileRes = (resolution === 'mobile' || resolution === 'mobile_s');
             var downloadUrl = url;
             
-            if (resolution === '4k') {
-                downloadUrl = url;
-            } else if (resolution === 'mobile' || resolution === 'mobile_s') {
-                if (url.indexOf('th?id=') !== -1) {
-                    var baseUrl = url.split('&')[0];
-                    downloadUrl = baseUrl + '&w=' + res.w + '&h=' + res.h;
-                }
-            } else {
-                if (url.indexOf('th?id=') !== -1) {
-                    var baseUrl = url.split('&')[0];
-                    downloadUrl = baseUrl + '&w=' + res.w + '&h=' + res.h;
-                }
+            var fileName = 'history_' + (item.date || Date.now()) + '_' + resolution + '.jpg';
+            
+            console.log('📥 下载: ' + fileName);
+            
+            function tryDownload(downloadUrl) {
+                fetch(downloadUrl, {
+                    mode: 'cors',
+                    headers: { 'Origin': window.location.origin }
+                })
+                .then(function(response) {
+                    if (!response.ok) throw new Error('网络请求失败');
+                    return response.blob();
+                })
+                .then(function(blob) {
+                    if (isMobileRes) {
+                        return cropToMobile(blob, fileName, resolution);
+                    } else {
+                        return downloadBlob(blob, fileName);
+                    }
+                })
+                .catch(function(err) {
+                    console.warn('⚠️ 下载失败，直接打开:', err.message);
+                    var link = document.createElement('a');
+                    link.href = downloadUrl;
+                    link.download = fileName;
+                    link.target = '_blank';
+                    document.body.appendChild(link);
+                    link.click();
+                    document.body.removeChild(link);
+                });
             }
             
-            var fileName = 'history_' + (item.date || '') + '_' + resolution + '.jpg';
-            
-            fetch(downloadUrl, {
-                mode: 'cors',
-                headers: { 'Origin': window.location.origin }
-            })
-            .then(function(response) {
-                if (!response.ok) throw new Error('网络请求失败');
-                return response.blob();
-            })
-            .then(function(blob) {
-                if (resolution === 'mobile' || resolution === 'mobile_s') {
-                    return cropToMobile(blob, fileName, resolution);
-                } else {
-                    return downloadBlob(blob, fileName);
-                }
-            })
-            .catch(function(err) {
-                console.warn('⚠️ 下载失败:', err.message);
-                var link = document.createElement('a');
-                link.href = downloadUrl + (downloadUrl.indexOf('?') === -1 ? '?' : '&') + '_t=' + Date.now();
-                link.download = fileName;
-                link.target = '_blank';
-                document.body.appendChild(link);
-                link.click();
-                document.body.removeChild(link);
-            });
+            tryDownload(downloadUrl);
         }
 
+        // ★★★ 手机竖屏裁剪 - 从中心裁剪 9:16 ★★★
         function cropToMobile(blob, fileName, resolution) {
             return new Promise(function(resolve, reject) {
                 var img = new Image();
@@ -1588,23 +1637,25 @@ html, body {
                     canvas.width = targetW;
                     canvas.height = targetH;
                     
-                    var imgRatio = img.width / img.height;
+                    var imgW = img.width;
+                    var imgH = img.height;
                     var targetRatio = targetW / targetH;
+                    var cropW, cropH, cropX, cropY;
                     
-                    var sx, sy, sw, sh;
-                    if (imgRatio > targetRatio) {
-                        sh = img.height;
-                        sw = img.height * targetRatio;
-                        sx = (img.width - sw) / 2;
-                        sy = 0;
+                    // ★★★ 从中心裁剪 ★★★
+                    if (imgW / imgH > targetRatio) {
+                        cropH = imgH;
+                        cropW = imgH * targetRatio;
+                        cropX = (imgW - cropW) / 2;
+                        cropY = 0;
                     } else {
-                        sw = img.width;
-                        sh = img.width / targetRatio;
-                        sx = 0;
-                        sy = (img.height - sh) / 2;
+                        cropW = imgW;
+                        cropH = imgW / targetRatio;
+                        cropX = 0;
+                        cropY = (imgH - cropH) / 2;
                     }
                     
-                    ctx.drawImage(img, sx, sy, sw, sh, 0, 0, targetW, targetH);
+                    ctx.drawImage(img, cropX, cropY, cropW, cropH, 0, 0, targetW, targetH);
                     
                     canvas.toBlob(function(croppedBlob) {
                         if (croppedBlob) {
@@ -1628,15 +1679,16 @@ html, body {
         }
 
         function downloadBlob(blob, fileName) {
+            var url = URL.createObjectURL(blob);
             var link = document.createElement('a');
-            link.href = URL.createObjectURL(blob);
+            link.href = url;
             link.download = fileName;
             document.body.appendChild(link);
             link.click();
             document.body.removeChild(link);
             setTimeout(function() {
-                URL.revokeObjectURL(link.href);
-            }, 1000);
+                URL.revokeObjectURL(url);
+            }, 2000);
             console.log('✅ 下载成功: ' + fileName);
         }
 
