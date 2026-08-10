@@ -208,10 +208,11 @@
             cursor: default;
         }
 
+        /* ★★★ 图片填满整个内容区 ★★★ */
         .preview-image {
             width: 100vw;
             height: 100vh;
-            object-fit: contain;
+            object-fit: cover;  /* 从 contain 改为 cover，填满整个区域 */
             border-radius: 0;
             box-shadow: none;
             background: #0d0d1a;
@@ -477,7 +478,7 @@
     <button class="back-to-top" id="backToTop" title="回到顶部"><i class="fas fa-arrow-up"></i></button>
 
     <!-- ============================================================
-    大图预览 - 核心：箭头始终可点，玻璃透明效果
+    大图预览 - 核心：箭头始终可点，玻璃透明效果，图片 cover 铺满
     ============================================================ -->
     <div class="preview-overlay" id="previewOverlay">
         <!-- ★★★ 左右箭头：始终可交互，玻璃透明 ★★★ -->
@@ -526,7 +527,11 @@
     <script src="https://cdn.jsdelivr.net/npm/twikoo@1.6.41/dist/twikoo.min.js"></script>
     <script>
         // ============================================================
-        // 核心逻辑 - 大图预览优化：箭头永不隐藏，点击图片切换工具栏显隐
+        // 核心逻辑 - 大图预览优化：
+        // 1. 箭头始终显示，玻璃透明效果
+        // 2. 点击图片切换工具栏/信息面板显隐（箭头不受影响）
+        // 3. 切换图片时保持工具栏/信息面板的显隐状态
+        // 4. 图片使用 cover 铺满整个内容区
         // ============================================================
         (function() {
             // ---- 路径 ----
@@ -570,6 +575,8 @@
             var commentOverlay = document.getElementById('commentOverlay');
             var closeCommentBtn = document.getElementById('closeCommentBtn');
             var commentNavBtn = document.getElementById('commentNavBtn');
+            var toolbar = document.getElementById('toolbar');
+            var infoPanel = document.getElementById('infoPanel');
 
             // ---- 数据 ----
             var allData = [];
@@ -582,8 +589,8 @@
             var currentPreviewIndex = 0;
             var currentPreviewItem = null;
 
-            // ---- 预览状态 ----
-            var toolbarVisible = true; // 默认显示
+            // ---- 预览状态：工具栏是否可见 ----
+            var toolbarVisible = true;
 
             // ---- 进度条 ----
             var progressBar = document.getElementById('progress-bar');
@@ -765,6 +772,25 @@
             // ★★★ 核心：大图预览优化 ★★★
             // ============================================================
 
+            // ---- 应用工具栏显隐状态（不改变箭头） ----
+            function applyToolbarVisibility(visible) {
+                toolbarVisible = visible;
+                var elements = [toolbar, infoPanel];
+                for (var i = 0; i < elements.length; i++) {
+                    if (elements[i]) {
+                        elements[i].style.transition = 'opacity 0.3s ease';
+                        elements[i].style.opacity = visible ? '1' : '0';
+                        elements[i].style.pointerEvents = visible ? '' : 'none';
+                    }
+                }
+            }
+
+            // ---- 切换工具栏显隐（点击图片触发） ----
+            function toggleToolbar() {
+                applyToolbarVisibility(!toolbarVisible);
+            }
+
+            // ---- 打开预览 ----
             function openPreview(index) {
                 if (!allData || allData.length === 0) return;
                 if (index < 0) index = allData.length - 1;
@@ -779,13 +805,13 @@
                 previewOverlay.style.setProperty('--bg-url', 'url(' + imgSrc + ')');
                 navToggle.classList.add('hidden');
                 // 默认显示工具栏
-                showToolbar();
+                applyToolbarVisibility(true);
                 // 点击图片切换工具栏显隐（箭头始终可见）
                 previewImg.onclick = function(e) {
                     e.stopPropagation();
                     toggleToolbar();
                 };
-                // 触摸滑动
+                // 触摸滑动切换
                 var touchStartX = 0, touchStartY = 0;
                 previewImg.ontouchstart = function(e) {
                     var touch = e.touches[0];
@@ -800,13 +826,14 @@
                     if (Math.abs(deltaX) > 30 && Math.abs(deltaX) > Math.abs(deltaY) * 1.2) {
                         if (deltaX > 0) showPreview(currentPreviewIndex - 1);
                         else showPreview(currentPreviewIndex + 1);
-                        showToolbar();
+                        // 切换图片后保持当前的工具栏显隐状态（不自动显示）
                     }
                     touchStartX = 0;
                     touchStartY = 0;
                 };
             }
 
+            // ---- 显示指定索引的图片（保持工具栏状态） ----
             function showPreview(index) {
                 if (allData.length === 0) return;
                 if (index < 0) index = allData.length - 1;
@@ -827,57 +854,36 @@
                 previewDesc.textContent = currentPreviewItem.title || '';
                 previewOverlay.style.setProperty('--bg-url', 'url(' + imgSrc + ')');
                 resetZoom();
+                // ★★★ 关键：切换图片后保持当前的工具栏显隐状态 ★★★
+                applyToolbarVisibility(toolbarVisible);
             }
 
             function closePreview() {
                 previewOverlay.classList.remove('active');
                 document.body.style.overflow = 'auto';
                 navToggle.classList.remove('hidden');
-                showToolbar();
+                // 重置为显示
+                applyToolbarVisibility(true);
             }
 
-            // ★★★ 切换工具栏显隐（箭头始终显示，不受影响） ★★★
-            function toggleToolbar() {
-                toolbarVisible = !toolbarVisible;
-                var toolbars = document.querySelectorAll('.toolbar, .info-panel');
-                for (var i = 0; i < toolbars.length; i++) {
-                    toolbars[i].style.transition = 'opacity 0.3s ease';
-                    toolbars[i].style.opacity = toolbarVisible ? '1' : '0';
-                    toolbars[i].style.pointerEvents = toolbarVisible ? '' : 'none';
-                }
-                // 箭头不做任何隐藏处理，始终可见
-            }
-
-            function showToolbar() {
-                toolbarVisible = true;
-                var toolbars = document.querySelectorAll('.toolbar, .info-panel');
-                for (var i = 0; i < toolbars.length; i++) {
-                    toolbars[i].style.transition = 'opacity 0.3s ease';
-                    toolbars[i].style.opacity = '1';
-                    toolbars[i].style.pointerEvents = '';
-                }
-            }
-
-            // ---- 箭头事件（始终可用） ----
+            // ---- 箭头事件（始终可用，切换图片时保持状态） ----
             prevBtn.addEventListener('click', function(e) {
                 e.preventDefault();
                 e.stopPropagation();
                 showPreview(currentPreviewIndex - 1);
-                showToolbar();
             });
             nextBtn.addEventListener('click', function(e) {
                 e.preventDefault();
                 e.stopPropagation();
                 showPreview(currentPreviewIndex + 1);
-                showToolbar();
             });
 
             // ---- 键盘 ----
             document.addEventListener('keydown', function(e) {
                 if (!previewOverlay.classList.contains('active')) return;
                 if (e.key === 'Escape') closePreview();
-                if (e.key === 'ArrowLeft') { e.preventDefault(); showPreview(currentPreviewIndex - 1); showToolbar(); }
-                if (e.key === 'ArrowRight') { e.preventDefault(); showPreview(currentPreviewIndex + 1); showToolbar(); }
+                if (e.key === 'ArrowLeft') { e.preventDefault(); showPreview(currentPreviewIndex - 1); }
+                if (e.key === 'ArrowRight') { e.preventDefault(); showPreview(currentPreviewIndex + 1); }
             });
 
             previewOverlay.addEventListener('click', function(e) {
@@ -885,7 +891,7 @@
             });
             closePreviewBtn.addEventListener('click', closePreview);
 
-            // ---- 缩放 ----
+            // ---- 缩放（保持原有功能） ----
             var scale = 1, minScale = 0.3, maxScale = 5, translateX = 0, translateY = 0;
             var isDragging = false, startX = 0, startY = 0, lastTranslateX = 0, lastTranslateY = 0;
             function updateTransform() { previewImg.style.transform = 'translate(' + translateX + 'px, ' + translateY + 'px) scale(' + scale + ')'; }
@@ -938,7 +944,7 @@
 
             // ---- 启动 ----
             loadData();
-            console.log('✅ 大图预览优化：箭头玻璃透明，始终可点，点击图片切换工具栏');
+            console.log('✅ 大图预览优化：箭头始终可见，点击图片切换工具栏，切换图片保持状态，图片 cover 铺满');
             window.openComment = openComment;
             // 检查 URL 参数
             (function() {
