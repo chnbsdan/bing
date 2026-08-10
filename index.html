@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no" />
-    <title>必应壁纸 | 每日一图，带你领略世界之美</title>
+    <title>必应壁纸 | 每日一图</title>
     <link rel="icon" href="/favicon.ico" type="image/x-icon" />
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" />
     <style>
@@ -47,10 +47,11 @@
             --glass-bg: rgba(255, 255, 255, 0.06);
             --glass-border: rgba(255, 255, 255, 0.10);
             --glass-hover: rgba(255, 255, 255, 0.14);
-            /* ★★★ 下载按钮红色系 ★★★ */
-            --download-bg: rgba(220, 60, 60, 0.85);
-            --download-hover: rgba(200, 40, 40, 0.95);
-            --download-text: #fff;
+            /* ★★★ 红色系按钮 ★★★ */
+            --red-btn-bg: rgba(220, 60, 60, 0.85);
+            --red-btn-hover: rgba(200, 40, 40, 0.95);
+            --red-btn-text: #fff;
+            --red-btn-shadow: rgba(220, 60, 60, 0.25);
         }
         [data-theme="light"] {
             --bg-primary: #f0f2f5;
@@ -88,9 +89,10 @@
             --glass-bg: rgba(0, 0, 0, 0.04);
             --glass-border: rgba(0, 0, 0, 0.06);
             --glass-hover: rgba(0, 0, 0, 0.10);
-            --download-bg: rgba(220, 60, 60, 0.75);
-            --download-hover: rgba(200, 40, 40, 0.9);
-            --download-text: #fff;
+            --red-btn-bg: rgba(220, 60, 60, 0.75);
+            --red-btn-hover: rgba(200, 40, 40, 0.9);
+            --red-btn-text: #fff;
+            --red-btn-shadow: rgba(220, 60, 60, 0.2);
         }
         * { margin: 0; padding: 0; box-sizing: border-box; }
         html, body { 
@@ -272,7 +274,7 @@
         .arrow-left { left: 20px; }
         .arrow-right { right: 20px; }
 
-        /* ★★★ 工具栏 - 全新玻璃美化 ★★★ */
+        /* ★★★ 工具栏 - 全部按钮红底白字 ★★★ */
         .toolbar {
             position: fixed;
             top: 16px;
@@ -286,13 +288,14 @@
             transition: opacity 0.3s ease;
             -webkit-tap-highlight-color: transparent;
         }
+        /* ★★★ 所有工具栏按钮统一红底白字 ★★★ */
         .toolbar .btn {
-            background: var(--glass-bg);
+            background: var(--red-btn-bg);
             backdrop-filter: blur(12px);
             -webkit-backdrop-filter: blur(12px);
-            border: 1px solid var(--glass-border);
+            border: 1px solid rgba(220, 60, 60, 0.25);
             border-radius: 10px;
-            color: rgba(255, 255, 255, 0.8);
+            color: var(--red-btn-text);
             padding: 7px 14px;
             font-size: 12px;
             font-weight: 500;
@@ -306,49 +309,34 @@
             text-decoration: none;
             outline: none !important;
             letter-spacing: 0.3px;
-            box-shadow: 0 2px 12px rgba(0,0,0,0.15);
+            box-shadow: 0 2px 16px var(--red-btn-shadow);
         }
-        .toolbar .btn i { font-size: 13px; }
+        .toolbar .btn i { font-size: 13px; color: #fff; }
         .toolbar .btn:hover {
-            background: var(--glass-hover);
-            color: #fff;
-            border-color: rgba(255, 255, 255, 0.25);
-            transform: translateY(-1px);
-            box-shadow: 0 6px 24px rgba(0,0,0,0.25);
-        }
-        .toolbar .btn:active { transform: scale(0.96); }
-
-        /* ★★★ 下载按钮 - 红底白字 ★★★ */
-        .toolbar .btn-download {
-            background: var(--download-bg);
-            border-color: rgba(220, 60, 60, 0.3);
-            color: var(--download-text);
-            box-shadow: 0 2px 16px rgba(220, 60, 60, 0.25);
-        }
-        .toolbar .btn-download:hover {
-            background: var(--download-hover);
+            background: var(--red-btn-hover);
             border-color: rgba(200, 40, 40, 0.5);
             color: #fff;
             transform: translateY(-1px);
             box-shadow: 0 6px 28px rgba(220, 60, 60, 0.35);
         }
-        .toolbar .btn-download i { color: #fff; }
+        .toolbar .btn:active { transform: scale(0.96); }
+        .toolbar .btn i { color: #fff; }
 
         /* ★★★ 下载下拉菜单 - 白底黑字，悬停红底白字 ★★★ */
         .dropdown {
             position: relative;
             display: inline-block;
         }
-        .dropdown .btn-download {
+        .dropdown .btn {
             padding-right: 10px;
         }
-        .dropdown .btn-download i.fa-chevron-down {
+        .dropdown .btn i.fa-chevron-down {
             font-size: 10px;
             margin-left: 2px;
-            opacity: 0.8;
+            opacity: 0.9;
             transition: transform 0.25s ease;
         }
-        .dropdown:hover .btn-download i.fa-chevron-down {
+        .dropdown:hover .btn i.fa-chevron-down {
             transform: rotate(180deg);
         }
 
@@ -374,13 +362,26 @@
             pointer-events: none;
             overflow: hidden;
         }
-        /* ★★★ 让下拉菜单始终可交互，悬停触发展开 ★★★ */
-        .dropdown:hover .dropdown-menu {
+        /* ★★★ 关键修复：扩大热区，让菜单保持展开 ★★★ */
+        .dropdown:hover .dropdown-menu,
+        .dropdown-menu:hover {
             opacity: 1;
             visibility: visible;
             transform: translateY(0) scale(1);
             pointer-events: auto;
         }
+        /* 增加一个不可见的桥梁，防止鼠标移动时丢失 hover */
+        .dropdown::after {
+            content: '';
+            position: absolute;
+            bottom: -12px;
+            left: 0;
+            right: 0;
+            height: 12px;
+            background: transparent;
+            pointer-events: auto;
+        }
+
         /* ★★★ 菜单项 - 黑字，悬停红底白字 ★★★ */
         .dropdown-menu a {
             display: flex;
@@ -425,7 +426,7 @@
         .dropdown-menu .res-fhd:hover { color: #fff; }
         .dropdown-menu .res-fhd:hover i { color: #fff; }
 
-        /* ★★★ 打赏按钮 & 二维码 - 美化 ★★★ */
+        /* ★★★ 打赏按钮 & 二维码 - 美化（保持红底白字） ★★★ */
         .donate-qr-wrapper { position: relative; display: inline-block; }
         .donate-qr-wrapper .qr-tooltip {
             display: block;
@@ -621,11 +622,11 @@
             <img class="preview-image" id="previewImg" src="" alt="预览" />
         </div>
 
-        <!-- 右上角工具栏 - 全新玻璃美化 -->
+        <!-- 右上角工具栏 - 全部红底白字 -->
         <div class="toolbar" id="toolbar">
             <a href="/" class="btn" title="返回首页"><i class="fas fa-home"></i> <span>首页</span></a>
             <div class="dropdown" id="downloadDropdown">
-                <button class="btn btn-download" id="downloadBtn"><i class="fas fa-download"></i> <span>下载</span> <i class="fas fa-chevron-down"></i></button>
+                <button class="btn" id="downloadBtn"><i class="fas fa-download"></i> <span>下载</span> <i class="fas fa-chevron-down"></i></button>
                 <div class="dropdown-menu" id="downloadMenu">
                     <a href="#" data-res="4k" class="res-4k"><i class="fas fa-star"></i> 4K (UHD原图)</a>
                     <a href="#" data-res="fhd" class="res-fhd"><i class="fas fa-desktop"></i> 全高清 (1920×1080)</a>
@@ -665,7 +666,7 @@
         // 3. 切换图片时保持工具栏/信息面板的显隐状态
         // 4. 图片使用 cover 铺满整个内容区
         // 5. 下载功能完整保留
-        // 6. 下载按钮红底白字，下拉菜单白底黑字，悬停红底白字
+        // 6. 所有按钮红底白字，下拉菜单白底黑字悬停红底白字
         // ============================================================
         (function() {
             // ---- 路径 ----
@@ -1184,7 +1185,7 @@
 
             // ---- 启动 ----
             loadData();
-            console.log('✅ 大图预览优化完成：下载按钮红底白字，下拉菜单白底黑字悬停红底白字');
+            console.log('✅ 大图预览优化完成：所有按钮红底白字，下拉菜单白底黑字悬停红底白字，交互稳定');
             window.openComment = openComment;
             (function() {
                 var params = new URLSearchParams(window.location.search);
