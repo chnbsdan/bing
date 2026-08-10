@@ -44,6 +44,9 @@
             --meta-shadow: 0 2px 20px rgba(0,0,0,0.9), 0 0 40px rgba(0,0,0,0.4);
             --resolution-bg: #1a1a2e;
             --detail-panel-bg: #1a1a2e;
+            --glass-bg: rgba(255, 255, 255, 0.06);
+            --glass-border: rgba(255, 255, 255, 0.10);
+            --glass-hover: rgba(255, 255, 255, 0.14);
         }
         [data-theme="light"] {
             --bg-primary: #f0f2f5;
@@ -78,6 +81,9 @@
             --meta-shadow: 0 2px 20px rgba(255,255,255,0.9), 0 0 40px rgba(255,255,255,0.4);
             --resolution-bg: #ffffff;
             --detail-panel-bg: #ffffff;
+            --glass-bg: rgba(0, 0, 0, 0.04);
+            --glass-border: rgba(0, 0, 0, 0.06);
+            --glass-hover: rgba(0, 0, 0, 0.10);
         }
         * { margin: 0; padding: 0; box-sizing: border-box; }
         html, body { 
@@ -172,7 +178,9 @@
         .empty { flex: 0 0 100%; text-align: center; padding: 80px 20px; color: var(--text-secondary); }
         .empty .icon { font-size: 40px; margin-bottom: 10px; }
 
-        /* ===== ★★★ 大图预览 - 核心优化 ★★★ ===== */
+        /* ============================================================
+           大图预览 - 核心优化
+           ============================================================ */
         .preview-overlay {
             display: none;
             position: fixed;
@@ -208,11 +216,10 @@
             cursor: default;
         }
 
-        /* ★★★ 图片填满整个内容区 ★★★ */
         .preview-image {
             width: 100vw;
             height: 100vh;
-            object-fit: cover;  /* 从 contain 改为 cover，填满整个区域 */
+            object-fit: cover;
             border-radius: 0;
             box-shadow: none;
             background: #0d0d1a;
@@ -230,15 +237,15 @@
             position: fixed;
             top: 50%;
             transform: translateY(-50%);
-            background: rgba(255, 255, 255, 0.08);
-            backdrop-filter: blur(8px);
-            -webkit-backdrop-filter: blur(8px);
-            border: 1px solid rgba(255, 255, 255, 0.15);
+            background: var(--glass-bg);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+            border: 1px solid var(--glass-border);
             color: rgba(255, 255, 255, 0.7);
             font-size: 28px;
             padding: 18px 14px;
             cursor: pointer;
-            transition: 0.25s ease;
+            transition: all 0.25s ease;
             border-radius: 12px;
             z-index: 10;
             -webkit-tap-highlight-color: transparent !important;
@@ -250,21 +257,22 @@
         .arrow:focus { outline: none !important; box-shadow: none !important; }
         .arrow:hover { 
             color: #fff; 
-            background: rgba(255, 255, 255, 0.18);
-            border-color: rgba(255, 255, 255, 0.3);
+            background: var(--glass-hover);
+            border-color: rgba(255, 255, 255, 0.25);
+            transform: translateY(-50%) scale(1.04);
         }
         .arrow:active { transform: translateY(-50%) scale(0.94); }
         .arrow-left { left: 20px; }
         .arrow-right { right: 20px; }
 
-        /* ★★★ 工具栏 & 信息面板 ★★★ */
+        /* ★★★ 工具栏 - 全新玻璃美化 ★★★ */
         .toolbar {
             position: fixed;
-            top: 14px;
-            right: 14px;
+            top: 16px;
+            right: 16px;
             display: flex;
             align-items: center;
-            gap: 6px;
+            gap: 8px;
             z-index: 20;
             flex-wrap: wrap;
             justify-content: flex-end;
@@ -272,85 +280,183 @@
             -webkit-tap-highlight-color: transparent;
         }
         .toolbar .btn {
-            background: rgba(0, 0, 0, 0.5);
+            background: var(--glass-bg);
             backdrop-filter: blur(12px);
-            border: 1px solid rgba(255, 255, 255, 0.08);
-            border-radius: 8px;
+            -webkit-backdrop-filter: blur(12px);
+            border: 1px solid var(--glass-border);
+            border-radius: 10px;
             color: rgba(255, 255, 255, 0.8);
-            padding: 6px 12px;
+            padding: 7px 14px;
             font-size: 12px;
+            font-weight: 500;
             cursor: pointer;
-            transition: all 0.2s ease;
+            transition: all 0.25s ease;
             display: inline-flex;
             align-items: center;
-            gap: 4px;
+            gap: 6px;
             font-family: inherit;
             white-space: nowrap;
             text-decoration: none;
             outline: none !important;
+            letter-spacing: 0.3px;
+            box-shadow: 0 2px 12px rgba(0,0,0,0.15);
         }
-        .toolbar .btn:hover { background: rgba(255, 255, 255, 0.15); color: #fff; border-color: rgba(255, 255, 255, 0.2); }
+        .toolbar .btn i { font-size: 13px; }
+        .toolbar .btn:hover {
+            background: var(--glass-hover);
+            color: #fff;
+            border-color: rgba(255, 255, 255, 0.25);
+            transform: translateY(-1px);
+            box-shadow: 0 6px 24px rgba(0,0,0,0.25);
+        }
+        .toolbar .btn:active { transform: scale(0.96); }
 
+        /* ★★★ 下载下拉菜单 - 全新玻璃美化 ★★★ */
+        .dropdown {
+            position: relative;
+            display: inline-block;
+        }
+        .dropdown .btn {
+            padding-right: 10px;
+        }
+        .dropdown .btn i.fa-chevron-down {
+            font-size: 10px;
+            margin-left: 2px;
+            opacity: 0.6;
+            transition: transform 0.25s ease;
+        }
+        .dropdown:hover .btn i.fa-chevron-down {
+            transform: rotate(180deg);
+        }
+        .dropdown-menu {
+            display: block;
+            position: absolute;
+            top: calc(100% + 6px);
+            right: 0;
+            background: rgba(20, 22, 36, 0.92);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            border-radius: 12px;
+            padding: 8px 0;
+            min-width: 170px;
+            box-shadow: 0 12px 48px rgba(0, 0, 0, 0.6);
+            z-index: 30;
+            opacity: 0;
+            visibility: hidden;
+            transform: translateY(-6px) scale(0.96);
+            transition: all 0.25s cubic-bezier(0.2, 0.9, 0.4, 1);
+            pointer-events: none;
+            overflow: hidden;
+        }
+        .dropdown:hover .dropdown-menu {
+            opacity: 1;
+            visibility: visible;
+            transform: translateY(0) scale(1);
+            pointer-events: auto;
+        }
+        .dropdown-menu a {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            padding: 8px 18px;
+            color: rgba(255, 255, 255, 0.7);
+            text-decoration: none;
+            font-size: 13px;
+            font-weight: 400;
+            transition: all 0.2s ease;
+            white-space: nowrap;
+            cursor: pointer;
+            letter-spacing: 0.2px;
+        }
+        .dropdown-menu a i {
+            font-size: 14px;
+            width: 18px;
+            color: rgba(255, 255, 255, 0.3);
+            transition: color 0.2s;
+        }
+        .dropdown-menu a:hover {
+            background: rgba(255, 255, 255, 0.06);
+            color: #fff;
+        }
+        .dropdown-menu a:hover i {
+            color: var(--accent-color);
+        }
+        .dropdown-menu .divider {
+            height: 1px;
+            background: rgba(255, 255, 255, 0.06);
+            margin: 4px 12px;
+        }
+        /* 下拉菜单中分辨率标签高亮 */
+        .dropdown-menu .res-4k { color: #ffd700; }
+        .dropdown-menu .res-4k i { color: #ffd700; }
+        .dropdown-menu .res-fhd { color: #4fc3f7; }
+        .dropdown-menu .res-fhd i { color: #4fc3f7; }
+
+        /* ★★★ 打赏按钮 & 二维码 - 美化 ★★★ */
         .donate-qr-wrapper { position: relative; display: inline-block; }
         .donate-qr-wrapper .qr-tooltip {
-            display: none;
+            display: block;
             position: absolute;
-            top: calc(100% + 10px);
+            top: calc(100% + 6px);
             right: 0;
-            background: rgba(20, 20, 35, 0.95);
-            backdrop-filter: blur(16px);
-            border: 1px solid rgba(255, 255, 255, 0.1);
+            background: rgba(20, 22, 36, 0.94);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            border: 1px solid rgba(255, 255, 255, 0.08);
             border-radius: 12px;
-            padding: 12px 14px;
+            padding: 14px 16px;
             box-shadow: 0 12px 48px rgba(0, 0, 0, 0.6);
             z-index: 30;
             min-width: 280px;
+            opacity: 0;
+            visibility: hidden;
+            transform: translateY(-6px) scale(0.96);
+            transition: all 0.25s cubic-bezier(0.2, 0.9, 0.4, 1);
+            pointer-events: none;
+        }
+        .donate-qr-wrapper:hover .qr-tooltip {
+            opacity: 1;
+            visibility: visible;
+            transform: translateY(0) scale(1);
+            pointer-events: auto;
         }
         .donate-qr-wrapper .qr-tooltip::before {
             content: '';
             position: absolute;
             bottom: 100%;
-            right: 20px;
+            right: 24px;
             border: 8px solid transparent;
-            border-bottom-color: rgba(20, 20, 35, 0.95);
+            border-bottom-color: rgba(20, 22, 36, 0.94);
         }
-        .donate-qr-wrapper .qr-tooltip .qr-row { display: flex; gap: 12px; justify-content: center; align-items: center; }
-        .donate-qr-wrapper .qr-tooltip .qr-item { display: flex; flex-direction: column; align-items: center; gap: 4px; }
-        .donate-qr-wrapper .qr-tooltip .qr-item img { width: 110px; height: 110px; display: block; border-radius: 6px; background: #fff; padding: 4px; }
-        .donate-qr-wrapper .qr-tooltip .qr-item .qr-label { color: rgba(255, 255, 255, 0.6); font-size: 11px; font-weight: 500; }
+        .donate-qr-wrapper .qr-tooltip .qr-row { display: flex; gap: 14px; justify-content: center; align-items: center; }
+        .donate-qr-wrapper .qr-tooltip .qr-item { display: flex; flex-direction: column; align-items: center; gap: 6px; }
+        .donate-qr-wrapper .qr-tooltip .qr-item img { 
+            width: 110px; height: 110px; display: block; border-radius: 8px; 
+            background: #fff; padding: 4px;
+            box-shadow: 0 2px 12px rgba(0,0,0,0.2);
+            transition: transform 0.2s;
+        }
+        .donate-qr-wrapper .qr-tooltip .qr-item img:hover { transform: scale(1.02); }
+        .donate-qr-wrapper .qr-tooltip .qr-item .qr-label { 
+            color: rgba(255, 255, 255, 0.6); 
+            font-size: 11px; 
+            font-weight: 500;
+            letter-spacing: 0.3px;
+        }
         .donate-qr-wrapper .qr-tooltip .qr-item .qr-label.wechat { color: #07c160; }
         .donate-qr-wrapper .qr-tooltip .qr-item .qr-label.alipay { color: #1677ff; }
-        .donate-qr-wrapper .qr-tooltip .qr-footer { text-align: center; color: rgba(255, 255, 255, 0.35); font-size: 10px; margin-top: 8px; padding-top: 8px; border-top: 1px solid rgba(255, 255, 255, 0.06); }
-        .donate-qr-wrapper:hover .qr-tooltip { display: block; }
-
-        .dropdown { position: relative; display: inline-block; }
-        .dropdown .btn { padding-right: 8px; }
-        .dropdown .btn i.fa-chevron-down { font-size: 9px; margin-left: 2px; opacity: 0.5; }
-        .dropdown-menu {
-            display: none;
-            position: absolute;
-            top: calc(100% - 2px);
-            right: 0;
-            background: rgba(20, 20, 35, 0.96);
-            backdrop-filter: blur(16px);
-            border: 1px solid rgba(255, 255, 255, 0.08);
-            border-top: none;
-            border-radius: 0 0 10px 10px;
-            padding: 6px 0;
-            min-width: 140px;
-            box-shadow: 0 12px 40px rgba(0, 0, 0, 0.6);
-            z-index: 20;
-            opacity: 0;
-            visibility: hidden;
-            transform: translateY(-4px);
-            transition: opacity 0.2s ease, transform 0.2s ease, visibility 0.2s ease;
-            pointer-events: none;
+        .donate-qr-wrapper .qr-tooltip .qr-footer { 
+            text-align: center; 
+            color: rgba(255, 255, 255, 0.25); 
+            font-size: 10px; 
+            margin-top: 10px; 
+            padding-top: 10px; 
+            border-top: 1px solid rgba(255, 255, 255, 0.06);
+            letter-spacing: 0.5px;
         }
-        .dropdown:hover .dropdown-menu { display: block; opacity: 1; visibility: visible; transform: translateY(0); pointer-events: auto; }
-        .dropdown-menu a { display: block; padding: 7px 16px; color: rgba(255, 255, 255, 0.7); text-decoration: none; font-size: 12px; transition: 0.15s; white-space: nowrap; cursor: pointer; }
-        .dropdown-menu a:hover { background: rgba(255, 255, 255, 0.08); color: #fff; }
-        .dropdown-menu .divider { height: 1px; background: rgba(255, 255, 255, 0.06); margin: 4px 12px; }
 
+        /* ★★★ 信息面板 - 微调 ★★★ */
         .info-panel {
             position: fixed;
             bottom: 80px;
@@ -363,9 +469,9 @@
             z-index: 5;
             transition: opacity 0.3s ease;
         }
-        .info-panel .copyright { font-size: 14px; color: rgba(255, 255, 255, 0.85); line-height: 1.5; }
-        .info-panel .date { font-size: 12px; color: rgba(255, 255, 255, 0.4); margin-top: 4px; }
-        .info-panel .desc { font-size: 13px; color: rgba(255, 255, 255, 0.5); margin-top: 4px; max-width: 500px; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; text-overflow: ellipsis; line-height: 1.6; }
+        .info-panel .copyright { font-size: 14px; color: rgba(255, 255, 255, 0.85); line-height: 1.5; font-weight: 400; letter-spacing: 0.3px; }
+        .info-panel .date { font-size: 12px; color: rgba(255, 255, 255, 0.35); margin-top: 4px; }
+        .info-panel .desc { font-size: 13px; color: rgba(255, 255, 255, 0.45); margin-top: 4px; max-width: 500px; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; text-overflow: ellipsis; line-height: 1.6; }
 
         /* ===== 评论弹窗（简略） ===== */
         .comment-overlay { display: none; position: fixed; top: 0; left: 0; right: 0; bottom: 0; z-index: 3000; background: rgba(0, 0, 0, 0.5); backdrop-filter: blur(4px); justify-content: center; align-items: center; animation: fadeIn 0.25s ease; }
@@ -392,43 +498,37 @@
             .arrow { font-size: 20px; padding: 14px 10px; }
             .arrow-left { left: 8px; }
             .arrow-right { right: 8px; }
-            .toolbar { top: 10px; right: 10px; gap: 4px; }
-            .toolbar .btn { font-size: 11px; padding: 4px 8px; }
+            .toolbar { top: 12px; right: 12px; gap: 6px; }
+            .toolbar .btn { font-size: 11px; padding: 5px 10px; }
             .info-panel .copyright { font-size: 13px; }
             .info-panel .desc { font-size: 12px; -webkit-line-clamp: 1; }
-            .donate-qr-wrapper .qr-tooltip { min-width: 220px; padding: 8px 10px; }
+            .donate-qr-wrapper .qr-tooltip { min-width: 220px; padding: 10px 12px; }
             .donate-qr-wrapper .qr-tooltip .qr-item img { width: 90px; height: 90px; }
             .comment-modal { width: 95%; max-height: 90vh; border-radius: 12px; }
             .comment-header { padding: 14px 16px 10px; }
             .comment-header h2 { font-size: 16px; }
             .comment-body { padding: 14px 16px 12px; }
             .back-to-top { width: 38px; height: 38px; font-size: 16px; bottom: 70px; right: 14px; }
+            .dropdown-menu { min-width: 150px; }
+            .dropdown-menu a { font-size: 12px; padding: 6px 14px; }
         }
         @media (max-width: 576px) {
             .card { flex: 0 0 calc(100% / 3); }
-            .donate-qr-wrapper .qr-tooltip { min-width: 180px; padding: 6px 8px; }
+            .donate-qr-wrapper .qr-tooltip { min-width: 180px; padding: 8px 10px; }
             .donate-qr-wrapper .qr-tooltip .qr-item img { width: 75px; height: 75px; }
             .arrow { font-size: 18px; padding: 12px 8px; }
             .arrow-left { left: 4px; }
             .arrow-right { right: 4px; }
-        }
-        @media (max-width: 400px) {
-            .card { flex: 0 0 calc(100% / 2); }
-            .navbar { left: 48px; min-width: 140px; padding: 10px 12px; top: 8px; }
-            .navbar .logo { font-size: 14px; }
-            .navbar .search-box input { font-size: 12px; padding: 4px 8px; }
-            .navbar .nav-actions a, .navbar .nav-actions button { font-size: 12px; padding: 4px 8px; }
-            #themeToggle { width: 28px; height: 28px; font-size: 13px; }
-            .nav-toggle { font-size: 16px; padding: 4px 8px; top: 8px; left: 8px; }
             .toolbar .btn span { display: none; }
-            .toolbar .btn { padding: 4px 8px; }
-            .dropdown-menu { min-width: 100px; right: -10px; }
-            .dropdown-menu a { font-size: 11px; padding: 4px 12px; }
-            .donate-qr-wrapper .qr-tooltip { min-width: 150px; padding: 4px 6px; right: -20px; }
+            .toolbar .btn { padding: 5px 10px; }
+            .toolbar .btn i { font-size: 14px; }
+            .dropdown-menu { min-width: 130px; right: -6px; }
+            .dropdown-menu a { font-size: 11px; padding: 5px 12px; }
+            .donate-qr-wrapper .qr-tooltip { min-width: 150px; padding: 6px 8px; right: -10px; }
             .donate-qr-wrapper .qr-tooltip .qr-item img { width: 60px; height: 60px; }
-            .donate-qr-wrapper .qr-tooltip .qr-row { gap: 4px; }
-            .donate-qr-wrapper .qr-tooltip .qr-item .qr-label { font-size: 8px; }
-            .donate-qr-wrapper .qr-tooltip .qr-footer { font-size: 8px; margin-top: 4px; padding-top: 4px; }
+            .donate-qr-wrapper .qr-tooltip .qr-row { gap: 6px; }
+            .donate-qr-wrapper .qr-tooltip .qr-item .qr-label { font-size: 9px; }
+            .donate-qr-wrapper .qr-tooltip .qr-footer { font-size: 9px; margin-top: 6px; padding-top: 6px; }
             .comment-modal { width: 98%; max-height: 92vh; border-radius: 8px; }
             .comment-header h2 { font-size: 14px; }
             .comment-body { padding: 10px 12px 8px; }
@@ -481,7 +581,7 @@
     大图预览 - 核心：箭头始终可点，玻璃透明效果，图片 cover 铺满
     ============================================================ -->
     <div class="preview-overlay" id="previewOverlay">
-        <!-- ★★★ 左右箭头：始终可交互，玻璃透明 ★★★ -->
+        <!-- 左右箭头：始终可交互，玻璃透明 -->
         <button class="arrow arrow-left" id="prevPreviewBtn"><i class="fas fa-chevron-left"></i></button>
         <button class="arrow arrow-right" id="nextPreviewBtn"><i class="fas fa-chevron-right"></i></button>
 
@@ -489,18 +589,18 @@
             <img class="preview-image" id="previewImg" src="" alt="预览" />
         </div>
 
-        <!-- 右上角工具栏 -->
+        <!-- 右上角工具栏 - 全新玻璃美化 -->
         <div class="toolbar" id="toolbar">
             <a href="/" class="btn" title="返回首页"><i class="fas fa-home"></i> <span>首页</span></a>
             <div class="dropdown" id="downloadDropdown">
                 <button class="btn" id="downloadBtn"><i class="fas fa-download"></i> <span>下载</span> <i class="fas fa-chevron-down"></i></button>
                 <div class="dropdown-menu" id="downloadMenu">
-                    <a href="#" data-res="4k">4K (UHD原图)</a>
-                    <a href="#" data-res="fhd">全高清 (1920×1080)</a>
-                    <a href="#" data-res="hd">高清 (1366×768)</a>
+                    <a href="#" data-res="4k" class="res-4k"><i class="fas fa-star"></i> 4K (UHD原图)</a>
+                    <a href="#" data-res="fhd" class="res-fhd"><i class="fas fa-desktop"></i> 全高清 (1920×1080)</a>
+                    <a href="#" data-res="hd"><i class="fas fa-laptop"></i> 高清 (1366×768)</a>
                     <div class="divider"></div>
-                    <a href="#" data-res="mobile">手机 (1080×1920)</a>
-                    <a href="#" data-res="mobile_s">手机 (768×1280)</a>
+                    <a href="#" data-res="mobile"><i class="fas fa-mobile-alt"></i> 手机 (1080×1920)</a>
+                    <a href="#" data-res="mobile_s"><i class="fas fa-mobile"></i> 手机 (768×1280)</a>
                 </div>
             </div>
             <div class="donate-qr-wrapper">
@@ -532,6 +632,7 @@
         // 2. 点击图片切换工具栏/信息面板显隐（箭头不受影响）
         // 3. 切换图片时保持工具栏/信息面板的显隐状态
         // 4. 图片使用 cover 铺满整个内容区
+        // 5. 下载下拉菜单及所有按钮全新玻璃美化
         // ============================================================
         (function() {
             // ---- 路径 ----
@@ -826,7 +927,6 @@
                     if (Math.abs(deltaX) > 30 && Math.abs(deltaX) > Math.abs(deltaY) * 1.2) {
                         if (deltaX > 0) showPreview(currentPreviewIndex - 1);
                         else showPreview(currentPreviewIndex + 1);
-                        // 切换图片后保持当前的工具栏显隐状态（不自动显示）
                     }
                     touchStartX = 0;
                     touchStartY = 0;
@@ -854,7 +954,7 @@
                 previewDesc.textContent = currentPreviewItem.title || '';
                 previewOverlay.style.setProperty('--bg-url', 'url(' + imgSrc + ')');
                 resetZoom();
-                // ★★★ 关键：切换图片后保持当前的工具栏显隐状态 ★★★
+                // 关键：切换图片后保持当前的工具栏显隐状态
                 applyToolbarVisibility(toolbarVisible);
             }
 
@@ -862,11 +962,10 @@
                 previewOverlay.classList.remove('active');
                 document.body.style.overflow = 'auto';
                 navToggle.classList.remove('hidden');
-                // 重置为显示
                 applyToolbarVisibility(true);
             }
 
-            // ---- 箭头事件（始终可用，切换图片时保持状态） ----
+            // ---- 箭头事件（始终可用） ----
             prevBtn.addEventListener('click', function(e) {
                 e.preventDefault();
                 e.stopPropagation();
@@ -891,7 +990,7 @@
             });
             closePreviewBtn.addEventListener('click', closePreview);
 
-            // ---- 缩放（保持原有功能） ----
+            // ---- 缩放 ----
             var scale = 1, minScale = 0.3, maxScale = 5, translateX = 0, translateY = 0;
             var isDragging = false, startX = 0, startY = 0, lastTranslateX = 0, lastTranslateY = 0;
             function updateTransform() { previewImg.style.transform = 'translate(' + translateX + 'px, ' + translateY + 'px) scale(' + scale + ')'; }
@@ -924,7 +1023,7 @@
             document.addEventListener('touchend', endDrag, { passive: true });
             previewImg.addEventListener('wheel', wheelZoom, { passive: false });
 
-            // ---- 下载（简化） ----
+            // ---- 下载 ----
             document.querySelectorAll('#downloadMenu a').forEach(function(item) {
                 item.addEventListener('click', function(e) {
                     e.preventDefault();
@@ -944,9 +1043,8 @@
 
             // ---- 启动 ----
             loadData();
-            console.log('✅ 大图预览优化：箭头始终可见，点击图片切换工具栏，切换图片保持状态，图片 cover 铺满');
+            console.log('✅ 大图预览优化完成：箭头玻璃透明，工具栏/下拉菜单全新美化');
             window.openComment = openComment;
-            // 检查 URL 参数
             (function() {
                 var params = new URLSearchParams(window.location.search);
                 if (params.get('action') === 'comment') {
