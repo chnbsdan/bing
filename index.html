@@ -468,7 +468,7 @@ html, body {
     left: 0;
     right: 0;
     bottom: 0;
-    z-index: 1000;
+    z-index: 2000;
     background: rgba(0, 0, 0, 0.92);
     justify-content: center;
     align-items: center;
@@ -705,7 +705,7 @@ html, body {
     left: 0;
     right: 0;
     bottom: 0;
-    z-index: 2000;
+    z-index: 3000;
     background: rgba(0, 0, 0, 0.5);
     backdrop-filter: blur(4px);
     justify-content: center;
@@ -1020,7 +1020,7 @@ html, body {
         <i class="fas fa-arrow-up"></i>
     </button>
 
-   <!-- ============================================================
+    <!-- ============================================================
     大图预览
     ============================================================ -->
     <div class="preview-overlay" id="previewOverlay">
@@ -1297,7 +1297,8 @@ html, body {
                         urls: urls,
                         jpg: urls.fhd,
                         webp: urls.fhd,
-                        thumb: urls.thumb
+                        thumb: urls.thumb,
+                        urlbase: item.urlbase || ''
                     };
                 });
 
@@ -1577,7 +1578,7 @@ html, body {
         });
 
         // ============================================================
-        // 7. 大图预览 - ★★★ 统一使用 _1920x1080.jpg ★★★
+        // 7. 大图预览
         // ============================================================
 
         function openPreview(index) {
@@ -1591,7 +1592,6 @@ html, body {
             previewOverlay.classList.add('active');
             document.body.style.overflow = 'hidden';
             var urls = currentPreviewItem.urls;
-            // ★★★ 大图预览统一使用 1920x1080 ★★★
             var imgSrc = urls.fhd || '';
             previewOverlay.style.setProperty('--bg-url', 'url(' + imgSrc + ')');
 
@@ -1639,7 +1639,6 @@ html, body {
             currentPreviewItem = allData[currentPreviewIndex];
 
             var urls = currentPreviewItem.urls;
-            // ★★★ 大图预览统一使用 1920x1080 ★★★
             var imgSrc = urls.fhd || '';
             
             previewImg.src = imgSrc;
