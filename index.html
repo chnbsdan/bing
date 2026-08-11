@@ -52,6 +52,9 @@
             --red-btn-hover: rgba(200, 40, 40, 0.95);
             --red-btn-text: #fff;
             --red-btn-shadow: rgba(220, 60, 60, 0.25);
+            /* ★★★ 打赏弹窗背景 - 与整体风格协调 ★★★ */
+            --donate-bg: rgba(20, 22, 36, 0.92);
+            --donate-border: rgba(255, 255, 255, 0.08);
         }
         [data-theme="light"] {
             --bg-primary: #f0f2f5;
@@ -93,6 +96,8 @@
             --red-btn-hover: rgba(200, 40, 40, 0.9);
             --red-btn-text: #fff;
             --red-btn-shadow: rgba(220, 60, 60, 0.2);
+            --donate-bg: rgba(255, 255, 255, 0.95);
+            --donate-border: rgba(0, 0, 0, 0.08);
         }
         * { margin: 0; padding: 0; box-sizing: border-box; }
         html, body { 
@@ -352,7 +357,6 @@
             transform: rotate(180deg);
         }
 
-        /* ★★★ 下拉菜单 - 白底黑字，悬停红底白字 ★★★ */
         .dropdown-menu {
             display: block;
             position: absolute;
@@ -434,20 +438,20 @@
         .dropdown-menu .res-fhd:hover { color: #fff; }
         .dropdown-menu .res-fhd:hover i { color: #fff; }
 
-        /* ★★★ 打赏按钮 & 二维码 ★★★ */
+        /* ★★★ 打赏按钮 & 二维码 - 背景色优化 ★★★ */
         .donate-qr-wrapper { position: relative; display: inline-block; }
         .donate-qr-wrapper .qr-tooltip {
             display: block;
             position: absolute;
             top: calc(100% + 8px);
             right: 0;
-            background: rgba(20, 22, 36, 0.94);
+            background: var(--donate-bg);
             backdrop-filter: blur(20px);
             -webkit-backdrop-filter: blur(20px);
-            border: 1px solid rgba(255, 255, 255, 0.08);
+            border: 1px solid var(--donate-border);
             border-radius: 12px;
             padding: 14px 16px;
-            box-shadow: 0 12px 48px rgba(0, 0, 0, 0.6);
+            box-shadow: 0 12px 48px rgba(0, 0, 0, 0.5);
             z-index: 30;
             min-width: 280px;
             opacity: 0;
@@ -468,19 +472,19 @@
             bottom: 100%;
             right: 24px;
             border: 8px solid transparent;
-            border-bottom-color: rgba(20, 22, 36, 0.94);
+            border-bottom-color: var(--donate-bg);
         }
         .donate-qr-wrapper .qr-tooltip .qr-row { display: flex; gap: 14px; justify-content: center; align-items: center; }
         .donate-qr-wrapper .qr-tooltip .qr-item { display: flex; flex-direction: column; align-items: center; gap: 6px; }
         .donate-qr-wrapper .qr-tooltip .qr-item img { 
             width: 110px; height: 110px; display: block; border-radius: 8px; 
             background: #fff; padding: 4px;
-            box-shadow: 0 2px 12px rgba(0,0,0,0.2);
+            box-shadow: 0 2px 12px rgba(0,0,0,0.15);
             transition: transform 0.2s;
         }
         .donate-qr-wrapper .qr-tooltip .qr-item img:hover { transform: scale(1.02); }
         .donate-qr-wrapper .qr-tooltip .qr-item .qr-label { 
-            color: rgba(255, 255, 255, 0.6); 
+            color: var(--text-secondary); 
             font-size: 11px; 
             font-weight: 500;
             letter-spacing: 0.3px;
@@ -489,11 +493,11 @@
         .donate-qr-wrapper .qr-tooltip .qr-item .qr-label.alipay { color: #1677ff; }
         .donate-qr-wrapper .qr-tooltip .qr-footer { 
             text-align: center; 
-            color: rgba(255, 255, 255, 0.25); 
+            color: var(--text-muted); 
             font-size: 10px; 
             margin-top: 10px; 
             padding-top: 10px; 
-            border-top: 1px solid rgba(255, 255, 255, 0.06);
+            border-top: 1px solid var(--border-color);
             letter-spacing: 0.5px;
         }
 
@@ -553,11 +557,10 @@
         .comment-body::-webkit-scrollbar-thumb { background: #ccc; border-radius: 2px; }
 
         /* ===== 响应式 ===== */
-        /* ★★★ 响应式调整卡片数量 ★★★ */
-        @media (max-width: 1200px) { .card { flex: 0 0 20%; } }  /* 5 个 */
-        @media (max-width: 992px) { .card { flex: 0 0 25%; } }  /* 4 个 */
+        @media (max-width: 1200px) { .card { flex: 0 0 20%; } }
+        @media (max-width: 992px) { .card { flex: 0 0 25%; } }
         @media (max-width: 768px) { 
-            .card { flex: 0 0 33.333%; }  /* 3 个 */
+            .card { flex: 0 0 33.333%; }
             .navbar { left: 52px; min-width: 160px; padding: 12px 14px; top: 10px; }
             .nav-toggle { font-size: 18px; padding: 5px 10px; top: 10px; left: 10px; }
             .arrow { font-size: 20px; padding: 14px 10px; }
@@ -579,7 +582,7 @@
             .dropdown-menu a { font-size: 12px; padding: 7px 14px; }
         }
         @media (max-width: 576px) {
-            .card { flex: 0 0 50%; }  /* 2 个 */
+            .card { flex: 0 0 50%; }
             .donate-qr-wrapper .qr-tooltip { min-width: 180px; padding: 8px 10px; }
             .donate-qr-wrapper .qr-tooltip .qr-item img { width: 75px; height: 75px; }
             .arrow { font-size: 18px; padding: 12px 8px; }
@@ -650,10 +653,9 @@
     <button class="back-to-top" id="backToTop" title="回到顶部"><i class="fas fa-arrow-up"></i></button>
 
     <!-- ============================================================
-    大图预览 - 核心：箭头始终可点，玻璃透明效果，图片 cover 铺满
+    大图预览
     ============================================================ -->
     <div class="preview-overlay" id="previewOverlay">
-        <!-- 左右箭头：始终可交互，玻璃透明 -->
         <button class="arrow arrow-left" id="prevPreviewBtn"><i class="fas fa-chevron-left"></i></button>
         <button class="arrow arrow-right" id="nextPreviewBtn"><i class="fas fa-chevron-right"></i></button>
 
@@ -661,7 +663,6 @@
             <img class="preview-image" id="previewImg" src="" alt="预览" />
         </div>
 
-        <!-- 右上角工具栏 - 全部红底白字 -->
         <div class="toolbar" id="toolbar">
             <a href="/" class="btn" title="返回首页"><i class="fas fa-home"></i> <span>首页</span></a>
             <div class="dropdown" id="downloadDropdown">
@@ -688,7 +689,6 @@
             <button class="btn" id="closePreviewBtn"><i class="fas fa-times"></i></button>
         </div>
 
-        <!-- 底部信息 - 文字已放大 -->
         <div class="info-panel" id="infoPanel">
             <div class="copyright" id="previewCopyright"></div>
             <div class="date" id="previewDate"></div>
@@ -1204,7 +1204,7 @@
 
             // ---- 启动 ----
             loadData();
-            console.log('✅ 首页卡片一排5个，大图预览文字已放大');
+            console.log('✅ 打赏背景色已优化，与整体风格协调');
             window.openComment = openComment;
             (function() {
                 var params = new URLSearchParams(window.location.search);
