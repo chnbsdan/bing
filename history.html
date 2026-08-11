@@ -1586,6 +1586,9 @@ html, body {
             previewOverlay.style.setProperty('--bg-url', 'url(' + imgSrc + ')');
 
             navToggle.classList.add('hidden');
+            // ★★★ 删除 showToolbar()，让工具栏默认显示（由 applyToolbarVisibility 控制）★★★
+            // 但为了兼容，我们默认显示工具栏，但通过 toggleToolbar 控制
+            toolbarVisible = true;
             showToolbar();
 
             previewImg.onclick = function(e) {
@@ -1614,7 +1617,7 @@ html, body {
                     } else {
                         showPreview(currentPreviewIndex + 1);
                     }
-                    showToolbar();
+                    // ★★★ 切换图片后保持工具栏状态，不自动显示 ★★★
                 }
                 startX = 0;
                 startY = 0;
@@ -1635,16 +1638,19 @@ html, body {
             previewDesc.textContent = currentPreviewItem.title || '';
             previewOverlay.style.setProperty('--bg-url', 'url(' + imgSrc + ')');
             resetZoom();
+            // ★★★ 删除 showToolbar()，保持当前显隐状态 ★★★
         }
 
         function closePreview() {
             previewOverlay.classList.remove('active');
             document.body.style.overflow = 'auto';
             navToggle.classList.remove('hidden');
+            // ★★★ 关闭预览时恢复显示工具栏 ★★★
+            toolbarVisible = true;
             showToolbar();
         }
 
-                function toggleToolbar() {
+        function toggleToolbar() {
             toolbarVisible = !toolbarVisible;
             var toolbars = document.querySelectorAll('.toolbar');
             for (var i = 0; i < toolbars.length; i++) {
@@ -1660,7 +1666,7 @@ html, body {
             }
         }
 
-                function showToolbar() {
+        function showToolbar() {
             toolbarVisible = true;
             var toolbars = document.querySelectorAll('.toolbar');
             for (var i = 0; i < toolbars.length; i++) {
@@ -1683,14 +1689,14 @@ html, body {
             e.preventDefault();
             e.stopPropagation();
             showPreview(currentPreviewIndex - 1);
-            showToolbar();
+            // ★★★ 切换图片后保持工具栏状态，不自动显示 ★★★
         });
 
         nextPreviewBtn.addEventListener('click', function(e) {
             e.preventDefault();
             e.stopPropagation();
             showPreview(currentPreviewIndex + 1);
-            showToolbar();
+            // ★★★ 切换图片后保持工具栏状态，不自动显示 ★★★
         });
 
         document.addEventListener('keydown', function(e) {
@@ -1699,12 +1705,12 @@ html, body {
             if (e.key === 'ArrowLeft') {
                 e.preventDefault();
                 showPreview(currentPreviewIndex - 1);
-                showToolbar();
+                // ★★★ 保持工具栏状态 ★★★
             }
             if (e.key === 'ArrowRight') {
                 e.preventDefault();
                 showPreview(currentPreviewIndex + 1);
-                showToolbar();
+                // ★★★ 保持工具栏状态 ★★★
             }
         });
 
@@ -1910,6 +1916,7 @@ html, body {
         console.log('📜 历史时光已加载（样式已同步首页优化）');
         console.log('📊 数据源: /json/history-2010-2019.json');
         console.log('✅ 卡片一排5个 | 文字放大 | 红底白字按钮 | 玻璃箭头 | 半透明打赏');
+        console.log('✅ 点击图片切换工具栏，切换图片保持状态，箭头始终显示');
 
         window.openComment = openComment;
 
