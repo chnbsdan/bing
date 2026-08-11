@@ -1644,14 +1644,8 @@ html, body {
             showToolbar();
         }
 
-        function toggleToolbar() {
+                function toggleToolbar() {
             toolbarVisible = !toolbarVisible;
-            var arrows = document.querySelectorAll('.arrow');
-            for (var i = 0; i < arrows.length; i++) {
-                arrows[i].style.transition = 'opacity 0.3s ease';
-                arrows[i].style.opacity = toolbarVisible ? '1' : '0';
-                arrows[i].style.pointerEvents = toolbarVisible ? '' : 'none';
-            }
             var toolbars = document.querySelectorAll('.toolbar');
             for (var i = 0; i < toolbars.length; i++) {
                 toolbars[i].style.transition = 'opacity 0.3s ease';
@@ -1666,13 +1660,19 @@ html, body {
             }
         }
 
-        function showToolbar() {
+                function showToolbar() {
             toolbarVisible = true;
-            var allElements = document.querySelectorAll('.arrow, .toolbar, .info-panel');
-            for (var i = 0; i < allElements.length; i++) {
-                allElements[i].style.transition = 'opacity 0.3s ease';
-                allElements[i].style.opacity = '1';
-                allElements[i].style.pointerEvents = '';
+            var toolbars = document.querySelectorAll('.toolbar');
+            for (var i = 0; i < toolbars.length; i++) {
+                toolbars[i].style.transition = 'opacity 0.3s ease';
+                toolbars[i].style.opacity = '1';
+                toolbars[i].style.pointerEvents = '';
+            }
+            var infoPanels = document.querySelectorAll('.info-panel');
+            for (var i = 0; i < infoPanels.length; i++) {
+                infoPanels[i].style.transition = 'opacity 0.3s ease';
+                infoPanels[i].style.opacity = '1';
+                infoPanels[i].style.pointerEvents = '';
             }
         }
 
