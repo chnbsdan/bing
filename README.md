@@ -20,50 +20,39 @@
 
 ---
 
-## 🚀 在线体验
-
-| 服务 | 地址 |
-|------|------|
-| 🌐 **主页** | [https://bing.hangdn.net](https://bing.hangdn.net) |
-| 📜 **历史时光** | [https://bing.hangdn.net/history.html](https://bing.hangdn.net/history.html) |
-| 📖 **API 文档** | [https://bing.hangdn.net/api](https://bing.hangdn.net/api) |
-| 📊 **数据 JSON** | [https://bing.hangdn.net/json/data.json](https://bing.hangdn.net/json/data.json) |
-| 🗂️ **历史 JSON** | [https://bing.hangdn.net/json/history-2010-2019.json](https://bing.hangdn.net/json/history-2010-2019.json) |
-
----
 
 ## 📖 API 接口
 
 ### 今日壁纸
 ```bash
 # 返回 JSON 数据
-curl https://bing.hangdn.net/api/daily
+curl https://bing.***.net/api/daily
 
 # 直接显示图片
-curl https://bing.hangdn.net/api/daily?redirect=true
+curl https://bing.***.net/api/daily?redirect=true
 ```
 
 ### 随机壁纸
 ```bash
 # 返回 JSON 数据
-curl https://bing.hangdn.net/api/random
+curl https://bing.***.net/api/random
 
 # 直接显示图片
-curl https://bing.hangdn.net/api/random?redirect=true
+curl https://bing.***.net/api/random?redirect=true
 ```
 
 ### 指定日期
 ```bash
 # 返回 JSON 数据
-curl https://bing.hangdn.net/api/image?date=20260807
+curl https://bing.***.net/api/image?date=20260807
 
 # 直接显示图片
-curl https://bing.hangdn.net/api/image?date=20260807&redirect=true
+curl https://bing.***net/api/image?date=20260807&redirect=true
 ```
 
 ### 壁纸列表（分页）
 ```bash
-curl https://bing.hangdn.net/api/list?page=1&size=30
+curl https://bing.***.net/api/list?page=1&size=30
 ```
 
 ### 历史壁纸 API
