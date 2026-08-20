@@ -313,17 +313,6 @@
         .nav-link span {
             display: inline;
         }
-        @media (max-width: 768px) {
-            .nav-link span {
-                display: none;
-            }
-            .nav-link {
-                padding: 6px 10px;
-            }
-            .nav-link i {
-                font-size: 17px;
-            }
-        }
 
         .theme-toggle {
             background: rgba(255, 255, 255, 0.04);
@@ -358,11 +347,6 @@
         }
         .nav-toggle-mobile:hover {
             background: var(--nav-link-hover);
-        }
-        @media (max-width: 768px) {
-            .nav-toggle-mobile {
-                display: block;
-            }
         }
 
         .nav-mobile-menu {
@@ -402,23 +386,6 @@
             width: 20px;
             text-align: center;
             font-size: 16px;
-        }
-
-        @media (max-width: 768px) {
-            .nav-mobile-menu.open {
-                display: flex;
-            }
-            .nav-center {
-                display: none;
-            }
-            .navbar-modern.visible .nav-center {
-                display: none;
-            }
-        }
-        @media (min-width: 769px) {
-            .nav-mobile-menu {
-                display: none !important;
-            }
         }
 
         @keyframes pulse-dot {
@@ -1117,6 +1084,9 @@
             color: rgba(255,255,255,0.2) !important;
         }
 
+        /* ============================================================
+           ★★★ 响应式 - 移动端 ★★★
+           ============================================================ */
         @media (max-width: 1200px) { 
             .card { flex: 0 0 20%; } 
         }
@@ -1125,8 +1095,80 @@
         }
         @media (max-width: 768px) {
             .card { flex: 0 0 33.333%; }
-            .navbar-modern { top: 12px; padding: 8px 14px; border-radius: 12px; width: calc(100% - 20px); }
+            
+            /* ★★★ 导航栏 - 移动端 ★★★ */
+            .navbar-modern { 
+                top: 12px; 
+                padding: 8px 14px; 
+                border-radius: 12px; 
+                width: calc(100% - 20px); 
+            }
             .nav-brand-text { font-size: 16px; }
+            
+            /* ★★★ 移动端：显示搜索框 ★★★ */
+            .nav-center {
+                display: flex !important;
+                flex: 1;
+                max-width: 200px;
+                min-width: 80px;
+            }
+            .nav-search {
+                padding: 0 8px;
+                border-radius: 8px;
+            }
+            .nav-search input {
+                font-size: 12px;
+                padding: 6px 0;
+                min-width: 50px;
+            }
+            .nav-search .search-icon {
+                font-size: 12px;
+                margin-right: 4px;
+            }
+            .nav-search .search-btn {
+                padding: 4px 8px;
+                font-size: 12px;
+            }
+            .nav-search .search-clear {
+                font-size: 12px;
+                padding: 2px;
+            }
+            
+            /* ★★★ 移动端：显示汉堡按钮 ★★★ */
+            .nav-toggle-mobile {
+                display: flex !important;
+                align-items: center;
+                justify-content: center;
+                width: 36px;
+                height: 36px;
+                font-size: 20px;
+                background: rgba(255,255,255,0.04);
+                border-radius: 8px;
+                border: none;
+                color: var(--text-primary);
+                cursor: pointer;
+                transition: 0.2s;
+            }
+            .nav-toggle-mobile:hover {
+                background: var(--nav-link-hover);
+            }
+            
+            /* ★★★ 移动端：按钮文字隐藏，只显示图标 ★★★ */
+            .nav-link span {
+                display: none;
+            }
+            .nav-link {
+                padding: 6px 8px;
+            }
+            .nav-link i {
+                font-size: 16px;
+            }
+            
+            /* ★★★ 移动端：下拉菜单 ★★★ */
+            .nav-mobile-menu.open {
+                display: flex;
+            }
+            
             .arrow { font-size: 20px; padding: 14px 10px; }
             .arrow-left { left: 8px; }
             .arrow-right { right: 8px; }
@@ -1921,6 +1963,7 @@
             // ---- 启动 ----
             loadData();
             console.log('✅ 导航栏已升级：默认隐藏，鼠标移入顶部显示');
+            console.log('✅ 移动端：搜索框 + 汉堡按钮已显示');
             window.openComment = openComment;
         })();
     </script>
