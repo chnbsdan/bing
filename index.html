@@ -588,6 +588,91 @@
             .info-panel .desc { font-size: 13px; }
             .info-panel .date { font-size: 12px; }
         }
+        /* ===== Twikoo 评论深色模式适配 ===== */
+[data-theme="dark"] .tk-comment,
+[data-theme="dark"] .tk-comment * {
+    color: #e0e0e0 !important;
+}
+[data-theme="dark"] .tk-comment .tk-content {
+    color: #d0d0d0 !important;
+}
+[data-theme="dark"] .tk-comment .tk-name {
+    color: #4fc3f7 !important;
+}
+[data-theme="dark"] .tk-comment .tk-time {
+    color: rgba(255,255,255,0.3) !important;
+}
+[data-theme="dark"] .tk-comment .tk-reply {
+    color: rgba(255,255,255,0.5) !important;
+}
+[data-theme="dark"] .tk-comment .tk-reply:hover {
+    color: #4fc3f7 !important;
+}
+[data-theme="dark"] .tk-comment .tk-avatar-img {
+    border-color: rgba(255,255,255,0.1) !important;
+}
+[data-theme="dark"] .tk-comment .tk-count {
+    color: rgba(255,255,255,0.4) !important;
+}
+[data-theme="dark"] .tk-comment .tk-action {
+    color: rgba(255,255,255,0.4) !important;
+}
+[data-theme="dark"] .tk-comment .tk-action:hover {
+    color: #4fc3f7 !important;
+}
+[data-theme="dark"] .tk-comment .tk-input {
+    background: rgba(255,255,255,0.06) !important;
+    border-color: rgba(255,255,255,0.1) !important;
+    color: #e0e0e0 !important;
+}
+[data-theme="dark"] .tk-comment .tk-input:focus {
+    border-color: #4fc3f7 !important;
+}
+[data-theme="dark"] .tk-comment .tk-submit {
+    background: var(--red-btn-bg) !important;
+    color: #fff !important;
+}
+[data-theme="dark"] .tk-comment .tk-submit:hover {
+    background: var(--red-btn-hover) !important;
+}
+[data-theme="dark"] .tk-comment .tk-emoji {
+    filter: invert(1) hue-rotate(180deg);
+}
+[data-theme="dark"] .tk-comment .tk-preview {
+    background: rgba(255,255,255,0.04) !important;
+    color: #d0d0d0 !important;
+}
+[data-theme="dark"] .tk-comment .tk-copyright {
+    color: rgba(255,255,255,0.2) !important;
+}
+/* 评论区整体背景 */
+[data-theme="dark"] .comment-body {
+    background: transparent !important;
+}
+[data-theme="dark"] .comment-modal {
+    background: #1a1a2e !important;
+    border-color: rgba(255,255,255,0.06) !important;
+}
+[data-theme="dark"] .comment-header {
+    border-color: rgba(255,255,255,0.06) !important;
+}
+[data-theme="dark"] .comment-header h2 {
+    color: #e0e0e0 !important;
+}
+[data-theme="dark"] .comment-header .close-btn {
+    color: rgba(255,255,255,0.4) !important;
+}
+[data-theme="dark"] .comment-header .close-btn:hover {
+    background: rgba(255,255,255,0.06) !important;
+    color: #fff !important;
+}
+/* 评论列表滚动条 */
+[data-theme="dark"] .comment-body::-webkit-scrollbar-thumb {
+    background: rgba(255,255,255,0.15) !important;
+}
+[data-theme="dark"] .comment-body::-webkit-scrollbar-track {
+    background: rgba(255,255,255,0.04) !important;
+}
     </style>
 </head>
 <body>
