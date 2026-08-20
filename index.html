@@ -7,7 +7,6 @@
     <link rel="icon" href="/favicon.ico" type="image/x-icon" />
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" />
     <style>
-        /* ===== 全局变量 & 重置 ===== */
         :root {
             --bg-primary: #0d0d1a;
             --bg-secondary: #1a1a2e;
@@ -47,12 +46,10 @@
             --glass-bg: rgba(255, 255, 255, 0.06);
             --glass-border: rgba(255, 255, 255, 0.10);
             --glass-hover: rgba(255, 255, 255, 0.14);
-            /* ★★★ 红色系按钮 ★★★ */
             --red-btn-bg: rgba(220, 60, 60, 0.85);
             --red-btn-hover: rgba(200, 40, 40, 0.95);
             --red-btn-text: #fff;
             --red-btn-shadow: rgba(220, 60, 60, 0.25);
-            /* ★★★ 打赏弹窗背景 - 与整体风格协调 ★★★ */
             --donate-bg: rgba(20, 22, 36, 0.40);
             --donate-border: rgba(255, 255, 255, 0.08);
         }
@@ -111,7 +108,6 @@
         }
         #progress-bar { position: fixed; top: 0; left: 0; height: 2.5px; background: var(--progress-bar); width: 0%; z-index: 9999; transition: width 0.3s ease; box-shadow: 0 0 12px rgba(79,195,247,0.4); }
 
-        /* ===== 导航栏（悬停显示） ===== */
         .nav-toggle { 
             position: fixed; top: 12px; left: 12px; z-index: 1001; 
             background: var(--nav-bg); backdrop-filter: blur(8px); 
@@ -154,7 +150,6 @@
         #themeToggle { background: var(--accent-hover); color: var(--accent-color); border-radius: 50%; width: 32px; height: 32px; padding: 0; display: flex; align-items: center; justify-content: center; }
         @keyframes pulse-dot { 0%, 100% { opacity: 1; transform: scale(1); } 50% { opacity: 0.5; transform: scale(0.8); } }
 
-        /* ===== 网格 ===== */
         .app { display: flex; flex-direction: column; width: 100%; height: 100vh; height: 100dvh; padding: 0; overflow: hidden; background: var(--bg-primary); }
         .grid { display: flex; flex-wrap: wrap; flex: 1; padding: 0; overflow-y: auto; min-height: 0; background: var(--bg-primary); align-content: flex-start; gap: 0; }
         .grid::-webkit-scrollbar { width: 6px; }
@@ -162,12 +157,11 @@
         .grid::-webkit-scrollbar-thumb { background: var(--accent-color); border-radius: 3px; }
         .grid::-webkit-scrollbar-thumb:hover { background: #81d4fa; }
 
-        /* ★★★ 卡片一排 5 个 ★★★ */
         .card { 
             position: relative; 
             overflow: hidden; 
             background: var(--bg-card); 
-            flex: 0 0 20%;  /* 5 个一排 */
+            flex: 0 0 20%;
             aspect-ratio: 16 / 9; 
             cursor: pointer; 
             transition: background 0.3s ease; 
@@ -205,15 +199,14 @@
         .empty { flex: 0 0 100%; text-align: center; padding: 80px 20px; color: var(--text-secondary); }
         .empty .icon { font-size: 40px; margin-bottom: 10px; }
 
-        /* ============================================================
-           大图预览 - 核心优化
-           ============================================================ */
         .preview-overlay {
             display: none;
             position: fixed;
             top: 0; left: 0; right: 0; bottom: 0;
             z-index: 2000;
-            background: rgba(0, 0, 0, 0.92);
+            background: rgba(0, 0, 0, 0.6);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
             justify-content: center;
             align-items: center;
             cursor: default;
@@ -226,7 +219,7 @@
             position: fixed;
             top: -10px; left: -10px; right: -10px; bottom: -10px;
             background: center/cover no-repeat;
-            filter: blur(30px) brightness(0.4);
+            filter: blur(30px) brightness(0.3);
             z-index: -1;
             transform: scale(1.1);
             transition: background-image 0.4s ease;
@@ -246,10 +239,10 @@
         .preview-image {
             width: 100vw;
             height: 100vh;
-            object-fit: cover;
+            object-fit: contain;
             border-radius: 0;
             box-shadow: none;
-            background: #0d0d1a;
+            background: transparent;
             pointer-events: auto;
             cursor: pointer;
             z-index: 5;
@@ -257,9 +250,13 @@
             -webkit-user-select: none;
             user-select: none;
             -webkit-touch-callout: none;
+            opacity: 1;
+            transition: none;
+        }
+        .preview-image.loading {
+            opacity: 1;
         }
 
-        /* ★★★ 玻璃透明箭头 ★★★ */
         .arrow {
             position: fixed;
             top: 50%;
@@ -292,7 +289,6 @@
         .arrow-left { left: 20px; }
         .arrow-right { right: 20px; }
 
-        /* ★★★ 工具栏 - 全部按钮红底白字 ★★★ */
         .toolbar {
             position: fixed;
             top: 16px;
@@ -306,6 +302,7 @@
             transition: opacity 0.3s ease;
             -webkit-tap-highlight-color: transparent;
         }
+        .toolbar.hidden { opacity: 0 !important; pointer-events: none !important; }
         .toolbar .btn {
             background: var(--red-btn-bg);
             backdrop-filter: blur(12px);
@@ -339,7 +336,6 @@
         .toolbar .btn:active { transform: scale(0.96); }
         .toolbar .btn i { color: #fff; }
 
-        /* ★★★ 下载下拉菜单 - 白底黑字，悬停红底白字 ★★★ */
         .dropdown {
             position: relative;
             display: inline-block;
@@ -429,16 +425,7 @@
             background: rgba(0, 0, 0, 0.06);
             margin: 4px 12px;
         }
-        .dropdown-menu .res-4k { color: #d63031; }
-        .dropdown-menu .res-4k i { color: #d63031; }
-        .dropdown-menu .res-4k:hover { color: #fff; }
-        .dropdown-menu .res-4k:hover i { color: #fff; }
-        .dropdown-menu .res-fhd { color: #2980b9; }
-        .dropdown-menu .res-fhd i { color: #2980b9; }
-        .dropdown-menu .res-fhd:hover { color: #fff; }
-        .dropdown-menu .res-fhd:hover i { color: #fff; }
 
-        /* ★★★ 打赏按钮 & 二维码 - 背景色优化 ★★★ */
         .donate-qr-wrapper { position: relative; display: inline-block; }
         .donate-qr-wrapper .qr-tooltip {
             display: block;
@@ -501,7 +488,6 @@
             letter-spacing: 0.5px;
         }
 
-        /* ★★★ 信息面板 - 文字放大 ★★★ */
         .info-panel {
             position: fixed;
             bottom: 80px;
@@ -514,6 +500,7 @@
             z-index: 5;
             transition: opacity 0.3s ease;
         }
+        .info-panel.hidden { opacity: 0 !important; pointer-events: none !important; }
         .info-panel .copyright { 
             font-size: 20px; 
             color: rgba(255, 255, 255, 0.9); 
@@ -541,7 +528,6 @@
             font-weight: 400; 
         }
 
-        /* ===== 评论弹窗（简略） ===== */
         .comment-overlay { display: none; position: fixed; top: 0; left: 0; right: 0; bottom: 0; z-index: 3000; background: rgba(0, 0, 0, 0.5); backdrop-filter: blur(4px); justify-content: center; align-items: center; animation: fadeIn 0.25s ease; }
         .comment-overlay.active { display: flex; }
         @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
@@ -556,7 +542,6 @@
         .comment-body::-webkit-scrollbar { width: 4px; }
         .comment-body::-webkit-scrollbar-thumb { background: #ccc; border-radius: 2px; }
 
-        /* ===== 响应式 ===== */
         @media (max-width: 1200px) { .card { flex: 0 0 20%; } }
         @media (max-width: 992px) { .card { flex: 0 0 25%; } }
         @media (max-width: 768px) { 
@@ -606,16 +591,11 @@
             .info-panel .desc { font-size: 13px; }
             .info-panel .date { font-size: 12px; }
         }
-        @media (max-width: 400px) {
-            .card { flex: 0 0 50%; }
-        }
     </style>
 </head>
 <body>
-    <!-- 进度条 -->
     <div id="progress-bar"></div>
 
-    <!-- 导航 -->
     <button class="nav-toggle" id="navToggle" aria-label="切换导航"><i class="fas fa-bars"></i></button>
     <div class="navbar" id="navbar">
         <div class="navbar-header"><div class="logo"><img src="/favicon.ico" alt="Logo" style="width:24px;height:24px;border-radius:4px;" /> Bing <span>Wallpaper</span></div></div>
@@ -635,7 +615,6 @@
         </div>
     </div>
 
-    <!-- 评论弹窗 -->
     <div class="comment-overlay" id="commentOverlay">
         <div class="comment-modal">
             <div class="comment-header">
@@ -646,15 +625,11 @@
         </div>
     </div>
 
-    <!-- 应用 -->
     <div class="app"><div class="grid" id="grid"></div></div>
 
-    <!-- 回到顶部 -->
     <button class="back-to-top" id="backToTop" title="回到顶部"><i class="fas fa-arrow-up"></i></button>
 
-    <!-- ============================================================
-    大图预览
-    ============================================================ -->
+    <!-- 大图预览 -->
     <div class="preview-overlay" id="previewOverlay">
         <button class="arrow arrow-left" id="prevPreviewBtn"><i class="fas fa-chevron-left"></i></button>
         <button class="arrow arrow-right" id="nextPreviewBtn"><i class="fas fa-chevron-right"></i></button>
@@ -668,8 +643,8 @@
             <div class="dropdown" id="downloadDropdown">
                 <button class="btn" id="downloadBtn"><i class="fas fa-download"></i> <span>下载</span> <i class="fas fa-chevron-down"></i></button>
                 <div class="dropdown-menu" id="downloadMenu">
-                    <a href="#" data-res="4k" class="res-4k"><i class="fas fa-star"></i> 4K (UHD原图)</a>
-                    <a href="#" data-res="fhd" class="res-fhd"><i class="fas fa-desktop"></i> 全高清 (1920×1080)</a>
+                    <a href="#" data-res="4k"><i class="fas fa-star"></i> 4K (UHD原图)</a>
+                    <a href="#" data-res="fhd"><i class="fas fa-desktop"></i> 全高清 (1920×1080)</a>
                     <a href="#" data-res="hd"><i class="fas fa-laptop"></i> 高清 (1366×768)</a>
                     <div class="divider"></div>
                     <a href="#" data-res="mobile"><i class="fas fa-mobile-alt"></i> 手机 (1080×1920)</a>
@@ -698,11 +673,7 @@
 
     <script src="https://cdn.jsdelivr.net/npm/twikoo@1.6.41/dist/twikoo.min.js"></script>
     <script>
-        // ============================================================
-        // 核心逻辑 - 大图预览优化
-        // ============================================================
         (function() {
-            // ---- 路径 ----
             function getBasePath() {
                 var path = window.location.pathname;
                 if (path.endsWith('.html')) return path.substring(0, path.lastIndexOf('/'));
@@ -722,7 +693,7 @@
             themeToggle.addEventListener('click', function() { setTheme(currentTheme === 'dark' ? 'light' : 'dark'); });
             setTheme(currentTheme);
 
-            // ---- DOM 引用 ----
+            // ---- DOM ----
             var grid = document.getElementById('grid');
             var previewOverlay = document.getElementById('previewOverlay');
             var previewImg = document.getElementById('previewImg');
@@ -756,8 +727,6 @@
             var hasMore = true;
             var currentPreviewIndex = 0;
             var currentPreviewItem = null;
-
-            // ---- 预览状态：工具栏是否可见 ----
             var toolbarVisible = true;
 
             // ---- 进度条 ----
@@ -798,6 +767,40 @@
             commentOverlay.addEventListener('click', function(e) { if (e.target === commentOverlay) closeComment(); });
             document.addEventListener('keydown', function(e) { if (e.key === 'Escape' && commentOverlay.classList.contains('active')) closeComment(); });
 
+            // ---- 判断数据类型 ----
+            function isHistoryData(item) {
+                if (!item) return false;
+                if (item.isHistory) return true;
+                var url = item.urlbase || '';
+                if (url.includes('/originals/')) return true;
+                if (url.startsWith('http') && !url.includes('bing.com')) return true;
+                if (url.startsWith('/originals/')) return true;
+                var date = item.date || '';
+                if (date && date.startsWith('201')) {
+                    if (!url.includes('th?id=')) return true;
+                }
+                return false;
+            }
+
+            // ---- 获取图片URL ----
+            function getImageUrl(item, resolution) {
+                if (!item) return '';
+                if (isHistoryData(item)) {
+                    return item.urlbase || item.thumb || '';
+                }
+                var baseUrl = 'https://www.bing.com' + item.urlbase;
+                var resMap = {
+                    '4k': '_UHD.jpg',
+                    'fhd': '_1920x1080.jpg',
+                    'hd': '_1920x1200.jpg',
+                    'mobile': '_1080x1920.jpg',
+                    'mobile_s': '_768x1280.jpg',
+                    'thumb': '_400x240.jpg'
+                };
+                var suffix = resMap[resolution] || '_1920x1080.jpg';
+                return baseUrl + suffix;
+            }
+
             // ---- 加载数据 ----
             async function loadData() {
                 showProgress();
@@ -810,13 +813,23 @@
                     allData = rawData.map(function(item) {
                         var dateStr = item.startdate;
                         var formattedDate = dateStr.slice(0,4) + '-' + dateStr.slice(4,6) + '-' + dateStr.slice(6,8);
-                        var baseUrl = 'https://www.bing.com' + item.urlbase;
+                        var urlbase = item.urlbase || '';
+                        var isHistory = isHistoryData(item);
+                        var baseUrl = isHistory ? urlbase : 'https://www.bing.com' + urlbase;
                         return {
                             date: formattedDate,
                             copyright: item.copyright || '',
                             title: item.title || '',
-                            urls: { uhd: baseUrl + '_UHD.jpg', fhd: baseUrl + '_1920x1080.jpg', hd: baseUrl + '_1920x1200.jpg', thumb: baseUrl + '_400x240.jpg' },
-                            urlbase: item.urlbase || ''
+                            urlbase: urlbase,
+                            isHistory: isHistory,
+                            urls: {
+                                uhd: isHistory ? urlbase : baseUrl + '_UHD.jpg',
+                                fhd: isHistory ? urlbase : baseUrl + '_1920x1080.jpg',
+                                hd: isHistory ? urlbase : baseUrl + '_1920x1200.jpg',
+                                mobile: isHistory ? urlbase : baseUrl + '_1080x1920.jpg',
+                                mobile_s: isHistory ? urlbase : baseUrl + '_768x1280.jpg',
+                                thumb: isHistory ? urlbase : baseUrl + '_400x240.jpg'
+                            }
                         };
                     });
                     allData.sort(function(a, b) { return b.date.localeCompare(a.date); });
@@ -849,7 +862,7 @@
                     var card = document.createElement('div');
                     card.className = 'card';
                     var thumbSrc = item.urls.thumb || '';
-                    card.innerHTML = '<div class="placeholder-bg" style="background-image: url(' + thumbSrc + ');"></div><img src="' + thumbSrc + '" alt="' + (item.copyright || item.date) + '" loading="lazy" /><div class="info"><div class="date">' + item.date + '</div><div class="title">' + (item.title || item.copyright || '无标题') + '</div><div class="copyright">' + (item.copyright || '') + '</div></div>';
+                    card.innerHTML = '<div class="placeholder-bg" style="background-image: url(' + thumbSrc + ');"></div><img src="' + thumbSrc + '" alt="' + (item.copyright || item.date) + '" loading="lazy" crossorigin="anonymous" /><div class="info"><div class="date">' + item.date + '</div><div class="title">' + (item.title || item.copyright || '无标题') + '</div><div class="copyright">' + (item.copyright || '') + '</div></div>';
                     var img = card.querySelector('img');
                     var placeholderBg = card.querySelector('.placeholder-bg');
                     img.addEventListener('load', function() { img.classList.add('loaded'); placeholderBg.classList.add('hidden'); });
@@ -1000,13 +1013,27 @@
                 if (index >= allData.length) index = 0;
                 currentPreviewIndex = index;
                 currentPreviewItem = allData[currentPreviewIndex];
-                var urls = currentPreviewItem.urls;
-                var imgSrc = urls.fhd || '';
+                var isMobile = window.innerWidth < 768;
+                var isHistory = currentPreviewItem.isHistory || false;
+                var imgSrc;
+
+                if (isMobile) {
+                    if (isHistory) {
+                        // 历史数据：使用原图
+                        imgSrc = currentPreviewItem.urls.fhd || currentPreviewItem.urls.uhd || '';
+                    } else {
+                        // ★★★ 必应数据：使用必应移动端接口 ★★★
+                        imgSrc = currentPreviewItem.urls.mobile_s || currentPreviewItem.urls.fhd || '';
+                    }
+                } else {
+                    imgSrc = currentPreviewItem.urls.fhd || '';
+                }
+
                 previewImg.src = imgSrc;
                 previewImg.onerror = function() {
                     var currentSrc = this.src;
-                    if (currentSrc === urls.fhd && urls.hd) { this.src = urls.hd; }
-                    else if (currentSrc === urls.hd && urls.uhd) { this.src = urls.uhd; }
+                    if (currentSrc === currentPreviewItem.urls.fhd && currentPreviewItem.urls.hd) { this.src = currentPreviewItem.urls.hd; }
+                    else if (currentSrc === currentPreviewItem.urls.hd && currentPreviewItem.urls.uhd) { this.src = currentPreviewItem.urls.uhd; }
                     else { this.alt = '图片加载失败'; }
                 };
                 previewCopyright.textContent = currentPreviewItem.copyright || '';
@@ -1121,8 +1148,8 @@
                     img.onload = function() {
                         var canvas = document.createElement('canvas');
                         var ctx = canvas.getContext('2d');
-                        var targetW = 1080, targetH = 1920;
-                        if (resolution === 'mobile_s') { targetW = 768; targetH = 1280; }
+                        var targetW = resolution === 'mobile_s' ? 768 : 1080;
+                        var targetH = resolution === 'mobile_s' ? 1280 : 1920;
                         canvas.width = targetW;
                         canvas.height = targetH;
                         var imgW = img.width, imgH = img.height;
@@ -1162,28 +1189,34 @@
                 var item = allData[index];
                 if (!item) return;
                 var fileName = getDownloadFileName(item, resolution);
-                console.log('📥 下载文件名:', fileName);
-                var urls = item.urls;
+                var isHistory = item.isHistory || false;
                 var isMobileRes = (resolution === 'mobile' || resolution === 'mobile_s');
-                var downloadUrl = urls.uhd || urls.fhd || '';
+                var url = getImageUrl(item, resolution);
+                if (!url) { console.warn('⚠️ 无效的下载地址'); return; }
 
-                function tryDownload(url) {
-                    fetch(url, { mode: 'cors' })
+                function tryDownload(downloadUrl) {
+                    fetch(downloadUrl, { mode: 'cors' })
                         .then(function(response) {
                             if (!response.ok) throw new Error('网络请求失败');
                             return response.blob();
                         })
                         .then(function(blob) {
                             if (isMobileRes) {
-                                return cropToMobile(blob, fileName, resolution);
+                                if (isHistory) {
+                                    // 历史数据：前端裁剪成竖屏
+                                    cropToMobile(blob, fileName, resolution);
+                                } else {
+                                    // ★★★ 必应数据：直接下载，必应接口已裁剪好 ★★★
+                                    downloadBlob(blob, fileName);
+                                }
                             } else {
-                                return downloadBlob(blob, fileName);
+                                downloadBlob(blob, fileName);
                             }
                         })
                         .catch(function(err) {
                             console.warn('⚠️ 下载失败，直接打开:', err.message);
                             var link = document.createElement('a');
-                            link.href = url;
+                            link.href = downloadUrl;
                             link.download = fileName;
                             link.target = '_blank';
                             document.body.appendChild(link);
@@ -1191,7 +1224,7 @@
                             document.body.removeChild(link);
                         });
                 }
-                tryDownload(downloadUrl);
+                tryDownload(url);
             }
 
             document.querySelectorAll('#downloadMenu a').forEach(function(item) {
@@ -1204,7 +1237,7 @@
 
             // ---- 启动 ----
             loadData();
-            console.log('✅ 打赏背景色已优化，与整体风格协调');
+            console.log('✅ 升级完成：历史数据识别、移动端竖屏预览、毛玻璃效果');
             window.openComment = openComment;
             (function() {
                 var params = new URLSearchParams(window.location.search);
